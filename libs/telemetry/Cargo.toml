@@ -1,0 +1,24 @@
+[package]
+name = "telemetry"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+# Workspace dependencies
+tracing = { workspace = true }
+thiserror = { workspace = true }
+
+# Tracing subscriber re-export
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+
+# OpenTelemetry core - using compatible versions
+tracing-opentelemetry = { version = "0.33.0" }
+opentelemetry = { version = "0.32.0" }
+opentelemetry_sdk = { version = "0.32.1", features = ["rt-tokio"] }
+opentelemetry-semantic-conventions = { version = "0.32.1" }
+
+# Exporters - using compatible versions
+opentelemetry-otlp = { version = "0.32.0", features = ["grpc-tonic"] }
+
+# workspace
+utils = { path = "../utils" }

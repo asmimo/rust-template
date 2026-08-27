@@ -1,0 +1,38 @@
+@import "tailwindcss" source(none);
+@source "../public";
+
+@plugin "@tailwindcss/typography";
+
+@plugin "daisyui" {
+  themes: false;
+}
+
+@theme {
+  --font-admin:
+    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --breakpoint-2xs: 320px;
+  --breakpoint-xs: 576px;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+@utility input {
+  @apply disabled:bg-base-300;
+}
+
+@utility select {
+  @apply disabled:bg-base-300;
+}
+
+[data-ad-status="filled"] {
+  @apply my-2.5;
+}

@@ -1,0 +1,7 @@
+/.git
+/.ignore_
+/node_modules
+/target
+.env
+.env.*
+GeoLite2-City.mmdb
