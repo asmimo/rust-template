@@ -1,5 +1,5 @@
 [package]
-name = "backend"
+name = "template_readonly"
 version.workspace = true
 edition.workspace = true
 
@@ -16,6 +16,7 @@ hitbox-redis = { workspace = true }
 hitbox-reqwest = { workspace = true }
 hitbox-tower = { workspace = true }
 hypertext = { workspace = true }
+reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }
@@ -27,6 +28,6 @@ tower_governor = { workspace = true }
 tracing = { workspace = true }
 
 # workspace
-identifiers = { path = "../../libs/identifiers" }
-telemetry = { path = "../../libs/telemetry" }
-utils = { path = "../../libs/utils", features = ["lettre", "maxminddb"] }
+identifiers = { workspace = true }
+telemetry = { workspace = true }
+utils = { workspace = true, features = ["lettre", "maxminddb"] }

@@ -15,6 +15,9 @@ pub enum AppError {
     Sqlx(#[from] sqlx::Error),
 
     #[error(transparent)]
+    HttpClient(#[from] reqwest::Error),
+
+    #[error(transparent)]
     Lettre(#[from] utils::lettre::LettreError),
 
     #[error(transparent)]
@@ -48,6 +51,11 @@ impl IntoResponse for AppError {
             }
             AppError::Sqlx(err) => {
                 tracing::error!("SQLx error: {err}");
+
+                (http::StatusCode::INTERNAL_SERVER_ERROR, None)
+            }
+            AppError::HttpClient(err) => {
+                tracing::error!("Reqwest error: {err}");
 
                 (http::StatusCode::INTERNAL_SERVER_ERROR, None)
             }

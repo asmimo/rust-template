@@ -20,6 +20,7 @@ use hitbox_http::{
 use hitbox_moka::MokaBackend;
 use hitbox_tower::Cache;
 use hypertext::prelude::*;
+use reqwest::{Client, ClientBuilder};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use tower::ServiceExt;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
@@ -29,6 +30,7 @@ use utils::{env, lettre::Lettre, maxminddb::MaxMindDB};
 #[allow(dead_code)]
 pub struct AppStateInner {
     pool: PgPool,
+    http_client: Client,
     maxminddb: MaxMindDB,
     lettre: Option<Lettre>,
 }
@@ -39,13 +41,14 @@ impl AppStateInner {
     pub async fn init() -> Result<Self, app_error::AppError> {
         let db_url = env::get_env("DATABASE_URL")?;
 
-        let (pool, maxminddb, lettre) = tokio::join!(
+        let (pool, http_client, maxminddb, lettre) = tokio::join!(
             PgPoolOptions::new()
                 // .max_connections(16)
                 .acquire_timeout(std::time::Duration::from_secs(30))
                 .idle_timeout(std::time::Duration::from_secs(600))
                 .test_before_acquire(true)
                 .connect(&db_url),
+            async { ClientBuilder::new().build() },
             async { MaxMindDB::init_old(None).await },
             async { Lettre::init() }
         );
@@ -58,6 +61,7 @@ impl AppStateInner {
 
         Ok(Self {
             pool: pool?,
+            http_client: http_client?,
             maxminddb: maxminddb?,
             lettre,
         })
