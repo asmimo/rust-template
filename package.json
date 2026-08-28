@@ -12,33 +12,33 @@
 		"format.js": "biome format"
 	},
 	"devDependencies": {
-		"@alpinejs/intersect": "3.15.11",
-		"@alpinejs/persist": "3.15.11",
+		"@alpinejs/intersect": "3.16.3",
+		"@alpinejs/persist": "3.16.3",
 		"@imacrayon/alpine-ajax": "0.12.7",
-		"@inquirer/checkbox": "5.1.3",
-		"@inquirer/input": "5.0.11",
-		"@inquirer/select": "5.1.3",
-		"@tailwindcss/typography": "0.5.19",
-		"@tailwindcss/vite": "4.2.2",
+		"@inquirer/checkbox": "5.2.3",
+		"@inquirer/input": "5.1.4",
+		"@inquirer/select": "5.2.3",
+		"@tailwindcss/typography": "0.5.20",
+		"@tailwindcss/vite": "4.3.3",
 		"@types/alpinejs": "3.13.11",
 		"@types/alpinejs__intersect": "3.13.4",
 		"@types/alpinejs__persist": "3.13.4",
-		"@types/bun": "1.3.12",
-		"alpinejs": "3.15.11",
+		"@types/bun": "1.4.0",
+		"alpinejs": "3.16.3",
 		"commander": "15.0.0",
-		"daisyui": "5.5.19",
-		"smol-toml": "1.6.1",
-		"tailwindcss": "4.2.2",
-		"tailwindcss-animated": "2.0.0",
-		"terser": "5.46.1",
-		"vite": "8.0.16"
+		"daisyui": "5.7.22",
+		"smol-toml": "1.8.0",
+		"tailwindcss": "4.3.3",
+		"tailwindcss-animated": "2.1.0",
+		"terser": "5.51.2",
+		"vite": "8.2.2"
 	},
 	"peerDependencies": {
 		"typescript": "7.0.2"
 	},
 	"optionalDependencies": {
-		"@rollup/rollup-linux-x64-gnu": "4.60.1",
-		"@tailwindcss/oxide-linux-x64-gnu": "4.2.2",
-		"lightningcss-linux-x64-gnu": "1.32.0"
+		"@rollup/rollup-linux-x64-gnu": "4.63.1",
+		"@tailwindcss/oxide-linux-x64-gnu": "4.3.3",
+		"lightningcss-linux-x64-gnu": "1.33.0"
 	}
 }

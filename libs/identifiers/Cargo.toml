@@ -13,4 +13,4 @@ uuid = ["dep:uuid"]
 [dependencies]
 nanoid = { version = "0.5.0", optional = true }
 ulid = { version = "3.0.0", optional = true }
-uuid = { version = "1.25.0", features = ["v7", "serde"], optional = true }
+uuid = { version = "1.26.0", features = ["v7", "serde"], optional = true }

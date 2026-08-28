@@ -120,9 +120,9 @@ impl MaxMindDB {
             && let Some(client_ip) = ip.as_ref()
             && let Ok(parsed_ip) = client_ip.parse::<IpAddr>()
             && let Some(reader) = &self.reader
-            && let Ok(Some(city)) = reader.as_ref().lookup::<City>(parsed_ip)
-            && let Some(location) = city.location
-            && let Some(tz) = location.time_zone
+            && let Ok(result) = reader.lookup(parsed_ip)
+            && let Ok(Some(city)) = result.decode::<City>()
+            && let Some(tz) = city.location.time_zone
         {
             time_zone = Some(tz);
         }

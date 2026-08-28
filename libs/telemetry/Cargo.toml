@@ -12,7 +12,7 @@ utils = { workspace = true }
 
 # Tracing subscriber re-export
 tracing-opentelemetry = { version = "0.33.0" }
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
 # OpenTelemetry core - using compatible versions
 opentelemetry = { version = "0.32.0" }
