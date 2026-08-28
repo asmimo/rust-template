@@ -31,7 +31,7 @@
 		"tailwindcss": "4.2.2",
 		"tailwindcss-animated": "2.0.0",
 		"terser": "5.46.1",
-		"vite": "8.0.8"
+		"vite": "8.0.16"
 	},
 	"peerDependencies": {
 		"typescript": "7.0.2"
