@@ -20,12 +20,10 @@ export const pushToDocker = async (config: AppConfig) => {
 	}
 	const dockerOrg = await input({
 		message: "Enter the docker org",
-		default: "yorallc2",
 	});
 
 	const imageName = await input({
 		message: "Enter the image name",
-		default: "foot-mono",
 	});
 
 	const imageTag = await input({
