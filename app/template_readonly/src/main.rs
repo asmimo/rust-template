@@ -1,25 +1,24 @@
 mod app_error;
 mod extractors;
+mod routes;
 mod templates;
 mod tracing_telemetry;
 
 use std::{convert::Infallible, sync::Arc, time::Duration};
 
-use axum::{Router, body::Body, extract::State, http, response::IntoResponse, routing, serve};
+use axum::{Router, body::Body, http, response::IntoResponse, routing, serve};
 use hitbox::{
     Config, Neutral,
     concurrency::BroadcastConcurrencyManager,
     policy::{PolicyConfig, StalePolicy},
 };
 use hitbox_backend::format::BincodeFormat;
-use hitbox_fn::prelude::*;
 use hitbox_http::{
     CacheableHttpResponse, extractors::Method as MethodExtractor,
     predicates::request::Method as RequestMethod,
 };
 use hitbox_moka::MokaBackend;
 use hitbox_tower::Cache;
-use hypertext::prelude::*;
 use reqwest::{Client, ClientBuilder};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use tower::ServiceExt;
@@ -27,7 +26,7 @@ use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 use tower_http::{compression::CompressionLayer, services::ServeDir, timeout::TimeoutLayer, trace};
 use utils::{env, lettre::Lettre, maxminddb::MaxMindDB};
 
-use crate::extractors::{rate_limiter, timezone::Timezone};
+use crate::extractors::rate_limiter;
 
 #[allow(dead_code)]
 pub struct AppStateInner {
@@ -122,7 +121,7 @@ async fn main() -> Result<(), app_error::AppError> {
     tracing::info!("Configuring server");
     let mut app = Router::new()
         // .route("/", routing::get(index))
-        .route("/", routing::get(index).layer(cache));
+        .route("/", routing::get(routes::index).layer(cache));
 
     let limiter = GovernorConfigBuilder::default()
         .const_period(std::time::Duration::from_millis(500))
@@ -182,31 +181,4 @@ async fn serve_static_assets(request: http::Request<Body>) -> impl IntoResponse 
 #[tracing::instrument]
 async fn health_check(request: http::Request<Body>) -> impl IntoResponse {
     http::StatusCode::OK
-}
-
-#[tracing::instrument(skip(_state))]
-async fn index(
-    State(_state): State<AppState>,
-    Timezone(timezone): Timezone,
-) -> Result<impl IntoResponse, app_error::AppError> {
-    let t = rsx! {
-        <div>"Hello, world!"</div>
-        <div>(format!("{timezone:?}"))</div>
-    };
-
-    let layout = templates::layout(&t);
-
-    Ok((
-        // [(
-        //     http::header::CACHE_CONTROL,
-        //     "public, max-age=15, stale-while-revalidate=30",
-        // )],
-        layout.render(),
-    )
-        .into_response())
-}
-
-#[cached]
-async fn add(x: i32, y: i32) -> i32 {
-    return x + y;
 }
