@@ -1,5 +1,5 @@
 mod app_error;
-mod rate_limiter_extractor;
+mod extractors;
 mod templates;
 mod tracing_telemetry;
 
@@ -26,6 +26,8 @@ use tower::ServiceExt;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 use tower_http::{compression::CompressionLayer, services::ServeDir, timeout::TimeoutLayer, trace};
 use utils::{env, lettre::Lettre, maxminddb::MaxMindDB};
+
+use crate::extractors::{rate_limiter, timezone::Timezone};
 
 #[allow(dead_code)]
 pub struct AppStateInner {
@@ -125,7 +127,7 @@ async fn main() -> Result<(), app_error::AppError> {
     let limiter = GovernorConfigBuilder::default()
         .const_period(std::time::Duration::from_millis(500))
         .const_burst_size(8)
-        .key_extractor(rate_limiter_extractor::CustomHeaderExtractor)
+        .key_extractor(rate_limiter::CustomHeaderExtractor)
         .finish();
 
     if let Some(limiter) = limiter {
@@ -182,17 +184,14 @@ async fn health_check(request: http::Request<Body>) -> impl IntoResponse {
     http::StatusCode::OK
 }
 
-#[tracing::instrument(skip(state))]
+#[tracing::instrument(skip(_state))]
 async fn index(
-    State(state): State<AppState>,
-    headers: http::HeaderMap,
+    State(_state): State<AppState>,
+    Timezone(timezone): Timezone,
 ) -> Result<impl IntoResponse, app_error::AppError> {
-    let maxmind = state.maxminddb.get_timezone(&headers).await;
-    let ip = format!("{maxmind:?}");
-
     let t = rsx! {
         <div>"Hello, world!"</div>
-        <div>(ip)</div>
+        <div>(format!("{timezone:?}"))</div>
     };
 
     let layout = templates::layout(&t);
