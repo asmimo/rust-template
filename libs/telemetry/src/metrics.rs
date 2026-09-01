@@ -2,7 +2,7 @@ use opentelemetry::{
     global,
     metrics::{Meter, MeterProvider},
 };
-use opentelemetry_otlp::{MetricExporter, Protocol, WithExportConfig};
+use opentelemetry_otlp::{MetricExporter, Protocol, WithExportConfig, WithTonicConfig};
 use opentelemetry_sdk::metrics::{PeriodicReader, SdkMeterProvider};
 
 use crate::{TelemetryConfig, config::OtlpProtocol, error::TelemetryResult};
@@ -20,7 +20,10 @@ impl MetricsExporter {
             .otlp_protocol
             .as_ref()
             .map(|otlp_protocol| match otlp_protocol {
-                OtlpProtocol::Grpc => export_builder.with_tonic().build(),
+                OtlpProtocol::Grpc => export_builder
+                    .with_tonic()
+                    .with_tls_config(TelemetryConfig::get_tls_config())
+                    .build(),
                 _ => export_builder
                     .with_http()
                     .with_protocol(Protocol::HttpBinary)

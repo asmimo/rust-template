@@ -1,5 +1,5 @@
 use opentelemetry::{global, trace::TracerProvider};
-use opentelemetry_otlp::{Protocol, SpanExporter, WithExportConfig};
+use opentelemetry_otlp::{Protocol, SpanExporter, WithExportConfig, WithTonicConfig};
 use opentelemetry_sdk::trace::{SdkTracerProvider, Tracer};
 
 use crate::{TelemetryConfig, config::OtlpProtocol, error::TelemetryResult};
@@ -17,7 +17,10 @@ impl TracingExporter {
             .otlp_protocol
             .as_ref()
             .map(|otlp_protocol| match otlp_protocol {
-                OtlpProtocol::Grpc => export_builder.with_tonic().build(),
+                OtlpProtocol::Grpc => export_builder
+                    .with_tonic()
+                    .with_tls_config(TelemetryConfig::get_tls_config())
+                    .build(),
                 _ => export_builder
                     .with_http()
                     .with_protocol(Protocol::HttpBinary)

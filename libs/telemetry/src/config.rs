@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use opentelemetry::KeyValue;
+use opentelemetry_otlp::tonic_types::transport::ClientTlsConfig;
 use opentelemetry_sdk::Resource;
 
 use utils::env;
@@ -99,5 +100,9 @@ impl TelemetryConfig {
                 self.service_version.clone(),
             ))
             .build()
+    }
+
+    pub fn get_tls_config() -> ClientTlsConfig {
+        ClientTlsConfig::new().with_native_roots()
     }
 }
