@@ -18,8 +18,10 @@ maxminddb = [
   "dep:tar",
   "dep:tokio",
 ]
+maxminddb-axum = ["maxminddb", "dep:axum"]
 
 [dependencies]
+axum = { workspace = true, optional = true }
 chrono = { workspace = true, optional = true }
 chrono-tz = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true }

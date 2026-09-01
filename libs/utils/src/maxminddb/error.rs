@@ -5,9 +5,6 @@ pub enum MaxmindDbError {
     #[error(transparent)]
     Io(#[from] std::io::Error),
 
-    #[error("Optional Error: {0}")]
-    Optional(String),
-
     #[error(transparent)]
     Env(#[from] env::EnvError),
 
@@ -16,6 +13,12 @@ pub enum MaxmindDbError {
 
     #[error(transparent)]
     MaxMindDB(#[from] maxminddb::MaxMindDbError),
+
+    #[error(transparent)]
+    ParseError(#[from] chrono_tz::ParseError),
+
+    #[error("Custom Error: {0}")]
+    Custom(String),
 }
 
 pub type MaxmindDbResult<T> = std::result::Result<T, MaxmindDbError>;

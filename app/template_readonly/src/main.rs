@@ -3,7 +3,7 @@ mod rate_limiter_extractor;
 mod templates;
 mod tracing_telemetry;
 
-use std::{collections::HashMap, convert::Infallible, sync::Arc, time::Duration};
+use std::{convert::Infallible, sync::Arc, time::Duration};
 
 use axum::{Router, body::Body, extract::State, http, response::IntoResponse, routing, serve};
 use hitbox::{
@@ -49,7 +49,7 @@ impl AppStateInner {
                 .test_before_acquire(true)
                 .connect(&db_url),
             async { ClientBuilder::new().build() },
-            async { MaxMindDB::init_old(None).await },
+            async { MaxMindDB::init() },
             async { Lettre::init() }
         );
 
@@ -62,7 +62,7 @@ impl AppStateInner {
         Ok(Self {
             pool: pool?,
             http_client: http_client?,
-            maxminddb: maxminddb?,
+            maxminddb,
             lettre,
         })
     }
@@ -187,11 +187,7 @@ async fn index(
     State(state): State<AppState>,
     headers: http::HeaderMap,
 ) -> Result<impl IntoResponse, app_error::AppError> {
-    let headers_map: HashMap<String, String> = headers
-        .iter()
-        .filter_map(|(k, v)| v.to_str().ok().map(|v| (k.to_string(), v.to_string())))
-        .collect();
-    let maxmind = state.maxminddb.get_client_timezone(&headers_map).await;
+    let maxmind = state.maxminddb.get_timezone(&headers).await;
     let ip = format!("{maxmind:?}");
 
     let t = rsx! {

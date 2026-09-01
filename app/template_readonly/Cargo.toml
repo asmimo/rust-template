@@ -30,4 +30,4 @@ tracing = { workspace = true }
 # workspace
 identifiers = { workspace = true }
 telemetry = { workspace = true }
-utils = { workspace = true, features = ["lettre", "maxminddb"] }
+utils = { workspace = true, features = ["lettre", "maxminddb-axum"] }
