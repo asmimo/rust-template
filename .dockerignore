@@ -1,7 +1,9 @@
 /.git
 /.ignore_
+/dist
 /node_modules
 /target
 .env
 .env.*
 GeoLite2-City.mmdb
+*.ignore.*

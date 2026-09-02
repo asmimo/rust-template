@@ -40,28 +40,24 @@ export const pushToDocker = async (config: AppConfig) => {
 
 		console.log("Build args:", buildArgs);
 
-		const cmd = `cd app/${app} && docker build --platform=linux/amd64${buildArgs} --push -t ${fullImageName} .`;
+		const cmd = `cd app/${app} && docker build --platform=linux/amd64${buildArgs} -t ${fullImageName} .`;
 		runCommand(cmd);
 	} else {
+    let buildArgs = "";
 		const tailwindConfig = await getTailwindConfig(
 			config.tailwindConfig || app,
-		);
-		process.env.TAILWIND_CONFIG = tailwindConfig;
-		const assetBuildCmd = `bun run build.script`;
-		await runCommand(assetBuildCmd);
+    );
+		buildArgs += ` --build-arg TAILWIND_CONFIG="${tailwindConfig}"`
 
 		const cargoToml = await getCargoTOML(`app/${app}`);
 		const featuresList = await getAppFeatures(cargoToml?.features || {});
-		const features =
-			featuresList.length > 0
-				? ` --build-arg FEATURES="${featuresList.join(",")}"`
-				: "";
 
-		const maxmindArg = process.env.MAXMINDDB_DOWNLOAD_URL
-			? ` --build-arg MAXMINDDB_DOWNLOAD_URL="${process.env.MAXMINDDB_DOWNLOAD_URL}"`
-			: "";
+		if (featuresList.length > 0) {
+			buildArgs += ` --build-arg FEATURES="${featuresList.join(",")}"`;
+		}
 
-		const cmd = `docker build --platform=linux/amd64 --push --build-arg APP="${app}"${features}${maxmindArg} -t ${fullImageName} .`;
+		const cmd = `docker buildx build --platform=linux/amd64,linux/arm64 --push --build-arg APP="${app}"${buildArgs} -t ${fullImageName} .`;
+		console.log("Running command:", cmd);
 		await runCommand(cmd);
 	}
 };

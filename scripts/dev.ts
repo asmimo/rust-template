@@ -86,7 +86,7 @@ export const run = async (config: AppConfig) => {
 			featuresList.length > 0 ? ` --features ${featuresList.join(",")}` : "";
 
 		const cmd = `watchexec -q ${watchApp} -r "bun run build.script -l silent & cargo run -p ${app}${features}"`;
-		console.log(cmd);
+		console.log("Running command:", cmd);
 		await runCommand(cmd);
 	}
 };

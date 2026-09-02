@@ -33,9 +33,13 @@ tracing = { workspace = true }
 flate2 = { version = "1.1.10", optional = true }
 ip-discovery = { version = "0.5.0", optional = true, features = ["async"] }
 jsonwebtoken = { version = "11.0.0", optional = true }
-lettre = { version = "0.11.23", optional = true, features = [
+lettre = { version = "0.11.23", optional = true, default-features = false, features = [
+  "builder",
+  "hostname",
+  "pool",
+  "smtp-transport",
   "tokio1",
-  "tokio1-native-tls",
+  "tokio1-rustls-tls",
 ] }
 maxminddb = { version = "0.30.3", optional = true }
 tar = { version = "0.4.46", optional = true }
