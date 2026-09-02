@@ -70,7 +70,6 @@ impl AppStateInner {
 }
 
 #[tokio::main]
-#[tracing::instrument]
 async fn main() -> Result<(), app_error::AppError> {
     dotenvy::from_filename(".env").ok();
 
