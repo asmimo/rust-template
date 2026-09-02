@@ -6,12 +6,13 @@ import {
 	getAppFeatures,
 	getCargoTOML,
 	getConfig,
+	getDirectoryFolders,
 	getPackageJSON,
 	getTailwindConfig,
 	runCommand,
 } from "./util.js";
 
-const libs = ["cache", "services", "share", "sport_monks", "utils"];
+const libsDir = await getDirectoryFolders("../libs");
 
 const buildWatchPaths = async (
 	app: string,
@@ -24,17 +25,8 @@ const buildWatchPaths = async (
 	const watchPaths = new Set<string>();
 	const cargoTomlDependencies = cargoToml.dependencies || {};
 
-	// Add admin if it's a dependency
-	if (
-		typeof cargoTomlDependencies === "object" &&
-		cargoTomlDependencies !== null &&
-		"admin" in cargoTomlDependencies
-	) {
-		watchPaths.add("-w app/admin");
-	}
-
 	// Process each lib that's a direct dependency
-	for (const lib of libs) {
+	for (const lib of libsDir) {
 		if (
 			typeof cargoTomlDependencies === "object" &&
 			cargoTomlDependencies !== null &&
@@ -47,7 +39,7 @@ const buildWatchPaths = async (
 			const libDeps = libCargoToml?.dependencies || {};
 
 			for (const dep of Object.keys(libDeps)) {
-				if (libs.includes(dep)) {
+				if (libsDir.includes(dep)) {
 					watchPaths.add(`-w libs/${dep}`);
 				}
 			}
@@ -85,7 +77,7 @@ export const run = async (config: AppConfig) => {
 		const features =
 			featuresList.length > 0 ? ` --features ${featuresList.join(",")}` : "";
 
-		const cmd = `watchexec -q ${watchApp} -r "bun run build.script -l silent & cargo run -p ${app}${features}"`;
+		const cmd = `watchexec -I -q ${watchApp} -r "bun run build.script -l silent & cargo run -p ${app}${features}"`;
 		console.log("Running command:", cmd);
 		await runCommand(cmd);
 	}

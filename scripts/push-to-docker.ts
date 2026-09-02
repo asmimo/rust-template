@@ -43,11 +43,11 @@ export const pushToDocker = async (config: AppConfig) => {
 		const cmd = `cd app/${app} && docker build --platform=linux/amd64${buildArgs} -t ${fullImageName} .`;
 		runCommand(cmd);
 	} else {
-    let buildArgs = "";
+		let buildArgs = "";
 		const tailwindConfig = await getTailwindConfig(
 			config.tailwindConfig || app,
-    );
-		buildArgs += ` --build-arg TAILWIND_CONFIG="${tailwindConfig}"`
+		);
+		buildArgs += ` --build-arg TAILWIND_CONFIG="${tailwindConfig}"`;
 
 		const cargoToml = await getCargoTOML(`app/${app}`);
 		const featuresList = await getAppFeatures(cargoToml?.features || {});

@@ -12,11 +12,6 @@ import { parse, type TomlValue } from "smol-toml";
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = dirname(__filename);
 
-// const fs = {
-// 	readdir: promisify(fs_.readdir),
-// 	readFile: promisify(fs_.readFile),
-// 	exists: promisify(fs_.exists),
-// };
 export const exec = promisify(cp.exec);
 // export const spawn = promisify(cp.spawn);
 
@@ -38,13 +33,25 @@ const getEnv = async (env: Env = "development") => {
 	});
 };
 
-const appRootDir = join(__dirname, "../app");
+export const getDirectoryFolders = async (
+	dir: string,
+	ignoreDotFiles: boolean = true,
+) => {
+	const resolved = join(__dirname, dir);
+
+	return fs.readdir(resolved).then((f) => {
+		if (ignoreDotFiles) {
+			return f.filter((f) => !f.startsWith("."));
+		}
+		return f;
+	});
+};
+
+const appRootDir = "../app";
 export const getApp = async (name?: string) => {
-	const apps = await fs
-		.readdir(appRootDir)
-		.then((f) =>
-			f.filter((f) => !f.startsWith(".") && !f.startsWith("admin")).sort(),
-		);
+	const apps = await getDirectoryFolders(appRootDir).then((f) =>
+		f.filter((f) => !f.startsWith(".") && !f.startsWith("admin")).sort(),
+	);
 
 	if (name && apps.includes(name)) {
 		return name;
@@ -85,13 +92,13 @@ export const getAppFeatures = async (features: TomlValue) => {
 	return [];
 };
 
-const tailwindConfigRootDir = join(__dirname, "../styles");
+const tailwindConfigRootDir = "../styles";
 export const getTailwindConfig = async (name?: string) => {
-	const tailwindConfigsV4 = await fs
-		.readdir(tailwindConfigRootDir)
-		.then((f) =>
-			f.filter((f) => !f.startsWith(".") && !f.startsWith("base")).sort(),
-		);
+	const tailwindConfigsV4 = await getDirectoryFolders(
+		tailwindConfigRootDir,
+	).then((f) =>
+		f.filter((f) => !f.startsWith(".") && !f.startsWith("base")).sort(),
+	);
 	const tailwindConfigs = ["SKIP", ...tailwindConfigsV4] as const;
 
 	const matchedConfig =
