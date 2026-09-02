@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use lettre::{
     AsyncSmtpTransport, AsyncTransport, Tokio1Executor, message::Message,
     transport::smtp::authentication::Credentials,
@@ -14,14 +12,14 @@ pub use config::*;
 pub use error::*;
 
 #[derive(Debug, Clone)]
-pub struct Lettre(Arc<AsyncSmtpTransport<Tokio1Executor>>);
+pub struct Lettre(AsyncSmtpTransport<Tokio1Executor>);
 
 impl Lettre {
     pub fn init() -> Result<Self, LettreError> {
         let config = EmailConfig::from_env()?;
         let transport = Self::init_with_config(config)?;
 
-        Ok(Self(Arc::new(transport)))
+        Ok(Self(transport))
     }
 
     pub fn init_with_config(

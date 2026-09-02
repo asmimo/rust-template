@@ -96,8 +96,7 @@ impl EmailBuilder {
     pub fn build(self) -> Result<Message, LettreError> {
         let from = self
             .from
-            .ok_or_else(|| LettreError::MessageBuilder(lettre::error::Error::MissingFrom))
-            .unwrap();
+            .ok_or_else(|| LettreError::MessageBuilder(lettre::error::Error::MissingFrom))?;
 
         if self.to.is_empty() {
             return Err(LettreError::MessageBuilder(lettre::error::Error::MissingTo));
