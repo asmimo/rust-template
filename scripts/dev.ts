@@ -2,7 +2,7 @@ import type { TomlTable } from "smol-toml";
 import type { AppConfig } from "./config.ts";
 import { getConfig } from "./config.ts";
 import { getCargoTOML, getDirectoryFolders, getPackageJSON } from "./fs.ts";
-import { catchError, runCommand } from "./process.ts";
+import { catchError, spawnSafe } from "./process.ts";
 import { getApp, getAppFeatures, getTailwindConfig } from "./prompts.ts";
 
 const libsDir = await getDirectoryFolders("../libs");
@@ -10,13 +10,13 @@ const libsDir = await getDirectoryFolders("../libs");
 const buildWatchPaths = async (
 	app: string,
 	cargoToml: TomlTable | undefined,
-): Promise<string> => {
-	const paths = ["-w public_script", `-w app/${app}`];
+): Promise<string[]> => {
+	const paths = ["public_script", `app/${app}`];
 
-	if (!cargoToml) return paths.join(" ");
+	if (!cargoToml) return paths;
 
 	const appDeps = cargoToml.dependencies;
-	if (typeof appDeps !== "object" || appDeps === null) return paths.join(" ");
+	if (typeof appDeps !== "object" || appDeps === null) return paths;
 
 	const directLibDeps = libsDir.filter((lib) => lib in appDeps);
 
@@ -28,11 +28,11 @@ const buildWatchPaths = async (
 				typeof libDeps === "object" && libDeps !== null
 					? Object.keys(libDeps).filter((dep) => libsDir.includes(dep))
 					: [];
-			return [lib, ...transitiveDeps].map((d) => `-w libs/${d}`);
+			return [lib, ...transitiveDeps].map((d) => `libs/${d}`);
 		}),
 	);
 
-	return [...paths, ...new Set(libPaths.flat())].join(" ");
+	return [...paths, ...new Set(libPaths.flat())];
 };
 
 export const run = async (config: AppConfig) => {
@@ -45,23 +45,27 @@ export const run = async (config: AppConfig) => {
 	const packageJson = await getPackageJSON(app);
 
 	if (packageJson) {
-		const cmd = `cd app/${app} && bun run dev`;
-		await runCommand(cmd);
+		await spawnSafe("bun", ["run", "dev"], { cwd: `app/${app}` });
 	} else {
 		const tailwindConfig = await getTailwindConfig(
 			config.tailwindConfig || app,
 		);
 		process.env.TAILWIND_CONFIG = tailwindConfig;
 
-		const watchApp = await buildWatchPaths(app, cargoToml);
-		const featuresList = await getAppFeatures(cargoToml?.features || {});
+		const watchPaths = await buildWatchPaths(app, cargoToml);
+		const watchArgs = watchPaths.flatMap((p) => ["-w", p]);
 
+		const featuresList = await getAppFeatures(cargoToml?.features || {});
 		const features =
 			featuresList.length > 0 ? ` --features ${featuresList.join(",")}` : "";
 
-		const cmd = `watchexec -I -q ${watchApp} -r "bun run build.script -l silent & cargo run -p ${app}${features}"`;
-		console.log("Running command:", cmd);
-		await runCommand(cmd);
+		await spawnSafe("watchexec", [
+			"-I",
+			"-q",
+			...watchArgs,
+			"-r",
+			`bun run build.script -l silent & cargo run -p ${app}${features}`,
+		]);
 	}
 };
 

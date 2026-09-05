@@ -2,7 +2,7 @@ import input from "@inquirer/input";
 import type { AppConfig } from "./config.ts";
 import { getConfig } from "./config.ts";
 import { getCargoTOML, getDockerfile } from "./fs.ts";
-import { catchError, runCommand } from "./process.ts";
+import { catchError, spawnSafe } from "./process.ts";
 import { getApp, getAppFeatures, getTailwindConfig } from "./prompts.ts";
 
 export const pushToDocker = async (config: AppConfig) => {
@@ -27,26 +27,49 @@ export const pushToDocker = async (config: AppConfig) => {
 
 	const appDockerFile = await getDockerfile(app);
 	if (appDockerFile) {
-		const cmd = `cd app/${app} && docker buildx build --platform=linux/amd64,linux/arm64 --push -t ${fullImageName} .`;
-		console.log("Running command:", cmd);
-		await runCommand(cmd);
+		await spawnSafe(
+			"docker",
+			[
+				"buildx",
+				"build",
+				"--platform",
+				"linux/amd64,linux/arm64",
+				"--push",
+				"-t",
+				fullImageName,
+				".",
+			],
+			{ cwd: `app/${app}` },
+		);
 	} else {
-		let buildArgs = "";
-
 		const cargoToml = await getCargoTOML(`app/${app}`);
 		const featuresList = await getAppFeatures(cargoToml?.features);
-		if (featuresList.length > 0) {
-			buildArgs += ` --build-arg FEATURES="${featuresList.join(",")}"`;
-		}
 
 		const tailwindConfig = await getTailwindConfig(
 			config.tailwindConfig || app,
 		);
-		buildArgs += ` --build-arg TAILWIND_CONFIG="${tailwindConfig}"`;
 
-		const cmd = `docker buildx build --platform=linux/amd64,linux/arm64 --push --build-arg APP="${app}"${buildArgs} -t ${fullImageName} .`;
-		console.log("Running command:", cmd);
-		await runCommand(cmd);
+		const buildArgs = [
+			"--build-arg",
+			`APP=${app}`,
+			"--build-arg",
+			`TAILWIND_CONFIG=${tailwindConfig}`,
+			...(featuresList.length > 0
+				? ["--build-arg", `FEATURES=${featuresList.join(",")}`]
+				: []),
+		];
+
+		await spawnSafe("docker", [
+			"buildx",
+			"build",
+			"--platform",
+			"linux/amd64,linux/arm64",
+			"--push",
+			...buildArgs,
+			"-t",
+			fullImageName,
+			".",
+		]);
 	}
 };
 

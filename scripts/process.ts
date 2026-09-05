@@ -3,11 +3,16 @@ import { promisify } from "node:util";
 
 export const exec = promisify(cp.exec);
 
-export const runCommand = async (cmd: string, args: string[] = []) => {
+export const spawnSafe = async (
+	program: string,
+	args: string[],
+	options: { cwd?: string } = {},
+) => {
 	return new Promise<void>((resolve, reject) => {
-		const child = cp.spawn(cmd, args, {
+		const child = cp.spawn(program, args, {
 			stdio: "inherit",
-			shell: true,
+			shell: false,
+			...options,
 		});
 
 		child.on("close", (code) => {
