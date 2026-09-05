@@ -1,7 +1,9 @@
+import type { Alpine } from "alpinejs";
+
 declare global {
-	// const Alpine: Alpine & Persist & Intersect;
+	const Alpine: Alpine // & Intersect;
 
 	interface Window {
-		// Alpine: Alpine;
+		Alpine: Alpine;
 	}
 }
