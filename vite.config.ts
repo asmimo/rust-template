@@ -1,11 +1,9 @@
 import { resolve } from "node:path";
 
 import tailwindCss from "@tailwindcss/vite";
-import { minify } from "terser";
 import { defineConfig, type Plugin } from "vite";
-import { getTailwindConfig } from "./scripts/util";
 
-// import * as esbuild from "esbuild";
+import { getTailwindConfig } from "./scripts/prompts.ts";
 
 const tailwindConfig = await getTailwindConfig(process.env.TAILWIND_CONFIG);
 
@@ -21,52 +19,31 @@ const injectCSSImport = (): Plugin => {
 	};
 };
 
-const minifyBundle = (): Plugin => {
-	return {
-		name: "minify-bundle",
-		async generateBundle(_, bundle) {
-			for (const asset of Object.values(bundle)) {
-				if (asset.type === "chunk") {
-					// asset.code = (
-					//   await esbuild.transform(asset.code, { minify: true })
-					// ).code;
-
-					const minifiedCode = await minify(asset.code, {
-						sourceMap: false,
-						mangle: true,
-						compress: true,
-					});
-
-					if (minifiedCode.code) {
-						asset.code = minifiedCode.code;
-					}
-				}
-			}
-		},
-	};
-};
-
 export default defineConfig({
 	appType: "custom",
 	build: {
-		// copyPublicDir: false,
-		// emptyOutDir: false,
-		// outDir: "public",
 		lib: {
-			entry: [resolve(__dirname, "public_script/main.ts")],
+			entry: [resolve(import.meta.dirname, "public_script/main.ts")],
 			formats: ["es"],
 		},
-		rollupOptions: {
+		minify: "oxc",
+		rolldownOptions: {
 			output: {
 				assetFileNames: (assetInfo) => {
-					if (assetInfo.name?.endsWith(".css")) {
+					const assetName = assetInfo.names[0] || "";
+
+					if (assetName.endsWith(".css")) {
 						return "output.css";
 					}
-					return assetInfo.name || "";
+					return assetName;
+				},
+				minify: {
+					codegen: {
+						removeWhitespace: true,
+					},
 				},
 			},
 		},
-		// minify: false,
 	},
-	plugins: [injectCSSImport(), minifyBundle(), tailwindCss()],
+	plugins: [injectCSSImport(), tailwindCss()],
 });

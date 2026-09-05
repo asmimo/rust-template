@@ -1,16 +1,9 @@
 import type { TomlTable } from "smol-toml";
-import {
-	type AppConfig,
-	catchError,
-	getApp,
-	getAppFeatures,
-	getCargoTOML,
-	getConfig,
-	getDirectoryFolders,
-	getPackageJSON,
-	getTailwindConfig,
-	runCommand,
-} from "./util.js";
+import type { AppConfig } from "./config.ts";
+import { getConfig } from "./config.ts";
+import { getCargoTOML, getDirectoryFolders, getPackageJSON } from "./fs.ts";
+import { catchError, runCommand } from "./process.ts";
+import { getApp, getAppFeatures, getTailwindConfig } from "./prompts.ts";
 
 const libsDir = await getDirectoryFolders("../libs");
 
@@ -18,39 +11,28 @@ const buildWatchPaths = async (
 	app: string,
 	cargoToml: TomlTable | undefined,
 ): Promise<string> => {
-	let watchApp = `-w public_script -w app/${app}`;
+	const paths = ["-w public_script", `-w app/${app}`];
 
-	if (!cargoToml) return watchApp;
+	if (!cargoToml) return paths.join(" ");
 
-	const watchPaths = new Set<string>();
-	const cargoTomlDependencies = cargoToml.dependencies || {};
+	const appDeps = cargoToml.dependencies;
+	if (typeof appDeps !== "object" || appDeps === null) return paths.join(" ");
 
-	// Process each lib that's a direct dependency
-	for (const lib of libsDir) {
-		if (
-			typeof cargoTomlDependencies === "object" &&
-			cargoTomlDependencies !== null &&
-			lib in cargoTomlDependencies
-		) {
-			watchPaths.add(`-w libs/${lib}`);
+	const directLibDeps = libsDir.filter((lib) => lib in appDeps);
 
-			// Add lib's dependencies recursively
-			const libCargoToml = await getCargoTOML(`libs/${lib}`);
-			const libDeps = libCargoToml?.dependencies || {};
+	const libPaths = await Promise.all(
+		directLibDeps.map(async (lib) => {
+			const libToml = await getCargoTOML(`libs/${lib}`);
+			const libDeps = libToml?.dependencies;
+			const transitiveDeps =
+				typeof libDeps === "object" && libDeps !== null
+					? Object.keys(libDeps).filter((dep) => libsDir.includes(dep))
+					: [];
+			return [lib, ...transitiveDeps].map((d) => `-w libs/${d}`);
+		}),
+	);
 
-			for (const dep of Object.keys(libDeps)) {
-				if (libsDir.includes(dep)) {
-					watchPaths.add(`-w libs/${dep}`);
-				}
-			}
-		}
-	}
-
-	for (const path of watchPaths) {
-		watchApp += ` ${path}`;
-	}
-
-	return watchApp;
+	return [...paths, ...new Set(libPaths.flat())].join(" ");
 };
 
 export const run = async (config: AppConfig) => {
