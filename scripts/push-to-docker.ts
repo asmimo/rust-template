@@ -27,9 +27,9 @@ export const pushToDocker = async (config: AppConfig) => {
 
 	const appDockerFile = await getDockerfile(app);
 	if (appDockerFile) {
-		const cmd = `cd app/${app} && docker buildx build --platform=linux/amd64,linux/arm64 -t ${fullImageName} .`;
+		const cmd = `cd app/${app} && docker buildx build --platform=linux/amd64,linux/arm64 --push -t ${fullImageName} .`;
 		console.log("Running command:", cmd);
-		runCommand(cmd);
+		await runCommand(cmd);
 	} else {
 		let buildArgs = "";
 
