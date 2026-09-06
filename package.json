@@ -8,7 +8,7 @@
 		"clean:rust": "rm -rf Cargo.lock && cargo clean",
 		"clean:all": "bun clean:js && bun clean:rust",
 		"dev": "bun ./scripts/dev.ts",
-		"build:script": "vite build",
+		"build:script": "tsc && vite build",
 		"build:docker": "bun ./scripts/push-to-docker.ts",
 		"format:rust": "cargo fmt",
 		"format:js": "bunx oxfmt",
