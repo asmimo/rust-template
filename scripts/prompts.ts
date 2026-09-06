@@ -28,7 +28,9 @@ export const getAppFeatures = async (
 	configFeatures?: string,
 ) => {
 	if (features && typeof features === "object" && features !== null) {
-		const tomlFeatures = Object.keys(features);
+		const tomlFeatures = Object.keys(features).filter(
+			(feature) => feature !== "default",
+		);
 
 		let validFeaturesList: string[] = [];
 		if (configFeatures) {
@@ -47,13 +49,11 @@ export const getAppFeatures = async (
 		if (tomlFeatures.length > 0) {
 			return await checkbox({
 				message: "Choose features",
-				choices: tomlFeatures
-					.filter((feature) => feature !== "default")
-					.map((feature) => ({
-						name: feature,
-						value: feature,
-						checked: validFeaturesList.includes(feature),
-					})),
+				choices: tomlFeatures.map((feature) => ({
+					name: feature,
+					value: feature,
+					checked: validFeaturesList.includes(feature),
+				})),
 			});
 		}
 	}
