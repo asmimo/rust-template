@@ -55,7 +55,7 @@ const runApp = async (config: SetRequired<AppConfig, "app">): Promise<void> => {
 		"-q",
 		...watchArgs,
 		"-r",
-		`bun run build.script -l silent & cargo run -p ${app}${features}`,
+		`bun run build:script -l silent & cargo run -p ${app}${features}`,
 	]);
 };
 

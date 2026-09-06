@@ -39,7 +39,7 @@ RUN bun install
 COPY . .
 ARG TAILWIND_CONFIG
 ENV TAILWIND_CONFIG=$TAILWIND_CONFIG
-RUN bun run build.script
+RUN bun run build:script
 
 # FROM chef AS wget-bundle
 # RUN mkdir -p /bundle/usr/bin \
