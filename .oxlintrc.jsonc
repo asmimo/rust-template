@@ -1,0 +1,51 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"categories": {
+		"correctness": "error",
+		"nursery": "off",
+		"pedantic": "warn",
+		"perf": "warn",
+		"restriction": "warn",
+		"style": "warn",
+		"suspicious": "warn",
+	},
+	"rules": {
+		"one-var": "off",
+		"oxc/no-async-await": "off",
+		"oxc/no-optional-chaining": "off",
+		"oxc/no-rest-spread-properties": "off",
+		"no-magic-numbers": [
+			"warn",
+			{
+				"ignore": [0, 1, -1],
+			},
+		],
+		"no-ternary": "off",
+		"sort-imports": [
+			"warn",
+			{
+				"ignoreDeclarationSort": true,
+			},
+		],
+	},
+	"overrides": [
+		{
+			"files": ["public/taboola_*.js"],
+			"rules": {
+				"unicorn/filename-case": ["off"],
+			},
+		},
+		{
+			"files": ["scripts/**/*"],
+			"rules": {
+				"no-console": "off",
+			},
+		},
+		{
+			"files": ["scripts/process.ts"],
+			"rules": {
+				"unicorn/no-process-exit": "off",
+			},
+		},
+	],
+}

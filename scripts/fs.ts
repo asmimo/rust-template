@@ -1,63 +1,59 @@
 import fs from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { parse } from "smol-toml";
+import path from "node:path";
 
-export const __filename = fileURLToPath(import.meta.url);
-export const __dirname = dirname(__filename);
+import { type TomlTable, parse } from "smol-toml";
+import type { PackageJson } from "type-fest";
 
 export const getDirectoryFolders = async (
 	dir: string,
-	ignoreDotFiles: boolean = true,
-) => {
-	const resolved = join(__dirname, dir);
+	ignoreDotFiles = true,
+): Promise<string[]> => {
+	const resolved = path.join(import.meta.dirname, dir);
 
-	return fs.readdir(resolved).then((f) => {
+	return await fs.readdir(resolved).then((files) => {
+		const sortedFiles = files.toSorted();
 		if (ignoreDotFiles) {
-			return f.filter((f) => !f.startsWith(".")).sort();
+			return sortedFiles.filter((file) => !file.startsWith("."));
 		}
-		return f;
+		return sortedFiles;
 	});
 };
 
-export const getCargoTOML = async (path: string) => {
-	const tomlPath = join(__dirname, "../", path, "Cargo.toml");
+export const getCargoTOML = async (dir: string): Promise<TomlTable | undefined> => {
+	const tomlPath = path.join(import.meta.dirname, "../", dir, "Cargo.toml");
 
 	try {
 		await fs.access(tomlPath);
 	} catch {
-		return undefined;
+		return;
 	}
 
-	const tomlContent = await fs.readFile(tomlPath, "utf-8");
-	const toml = parse(tomlContent);
+	const tomlContent = await fs.readFile(tomlPath, "utf8");
 
-	return toml;
+	return parse(tomlContent);
 };
 
-export const getDockerfile = async (app: string) => {
-	const dockerfilePath = join(__dirname, "../app", app, "Dockerfile");
+export const getDockerfile = async (app: string): Promise<string | undefined> => {
+	const dockerfilePath = path.join(import.meta.dirname, "../app", app, "Dockerfile");
 
 	try {
 		await fs.access(dockerfilePath);
 	} catch {
-		return undefined;
+		return;
 	}
 
-	return fs.readFile(dockerfilePath, "utf-8");
+	return fs.readFile(dockerfilePath, "utf8");
 };
 
-export const getPackageJSON = async (
-	app: string,
-): Promise<unknown | undefined> => {
-	const packageJsonPath = join(__dirname, "../app", app, "package.json");
+export const getPackageJSON = async (app: string): Promise<PackageJson | undefined> => {
+	const packageJsonPath = path.join(import.meta.dirname, "../app", app, "package.json");
 
 	try {
 		await fs.access(packageJsonPath);
 	} catch {
-		return undefined;
+		return;
 	}
 
-	const content = await fs.readFile(packageJsonPath, "utf-8");
+	const content = await fs.readFile(packageJsonPath, "utf8");
 	return JSON.parse(content);
 };

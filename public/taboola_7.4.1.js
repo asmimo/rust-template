@@ -1,4 +1,4 @@
-var e = document.createElement("div");
-e.id = "EuTdxloDskPq";
-e.style.display = "none";
-document.body.appendChild(e);
+const el = document.createElement("div");
+el.id = "EuTdxloDskPq";
+el.style.display = "none";
+document.body.append(el);

@@ -50,27 +50,30 @@ fn main() {
 
 ## ID Format Comparison
 
-| Format | Length | Example | Use Case |
-|--------|--------|---------|----------|
-| ULID | 26 chars | `01ARZ3NDEKTSV4RRFFQ69G5FAV` | Time-sortable, millisecond precision |
-| UUID v7 | 36 chars | `018b4d2e-7b74-7c58-abcd-123456789abc` | Standard UUID format, time-ordered |
-| NanoID | 21 chars | `V1StGXR8Z5jdHi6BJhvEi` | Compact, URL-safe, high entropy |
+| Format  | Length   | Example                                | Use Case                             |
+| ------- | -------- | -------------------------------------- | ------------------------------------ |
+| ULID    | 26 chars | `01ARZ3NDEKTSV4RRFFQ69G5FAV`           | Time-sortable, millisecond precision |
+| UUID v7 | 36 chars | `018b4d2e-7b74-7c58-abcd-123456789abc` | Standard UUID format, time-ordered   |
+| NanoID  | 21 chars | `V1StGXR8Z5jdHi6BJhvEi`                | Compact, URL-safe, high entropy      |
 
 ## Implementation Details
 
 ### ULID (Default)
+
 - 128-bit compatibility with UUID
 - Lexicographically sortable
 - Canonical base32 encoding
 - Millisecond timestamp precision
 
 ### UUID v7
+
 - RFC 4122 compliant
 - Unix timestamp-based
 - Sortable by creation time
 - Standard hyphenated format
 
 ### NanoID
+
 - Custom alphabet (alphanumeric only)
 - 21 character length for ~126 bits of entropy
 - No special characters (URL-safe)
@@ -79,6 +82,7 @@ fn main() {
 ## Priority System
 
 When multiple features are enabled, the library follows this priority:
+
 1. ULID (highest priority)
 2. UUID
 3. NanoID (lowest priority)

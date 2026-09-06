@@ -2,7 +2,7 @@
 import ajax from "@imacrayon/alpine-ajax";
 import Alpine from "alpinejs";
 
-window.Alpine = Alpine;
+globalThis.Alpine = Alpine;
 
 Alpine.plugin(ajax);
 

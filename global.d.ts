@@ -1,9 +1,5 @@
 import type { Alpine } from "alpinejs";
 
 declare global {
-	const Alpine: Alpine // & Intersect;
-
-	interface Window {
-		Alpine: Alpine;
-	}
+	var Alpine: Alpine;
 }
