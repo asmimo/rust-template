@@ -4,16 +4,16 @@ import { Command } from "commander";
 export const envs = ["development", "production"] as const;
 export type Env = (typeof envs)[number];
 
-const getEnv = async (env: Env = "development") => {
-	if (envs.includes(env)) {
-		return env;
+const getEnv = async (defaultEnv: Env = "development"): Promise<Env> => {
+	if (envs.includes(defaultEnv)) {
+		return defaultEnv;
 	}
 
 	const choices = envs.map((env) => ({ name: env, value: env }));
 
 	return await select({
-		message: "Choose an environment",
 		choices,
+		message: "Choose an environment",
 	});
 };
 
@@ -29,10 +29,7 @@ export const getConfig = async (): Promise<AppConfig> => {
 	program
 		.option("-e, --env <env>", "The name of the environment")
 		.option("-a, --app <app>", "The name of the app")
-		.option(
-			"--tailwind-config <tailwindConfig>",
-			"The name of the tailwind config",
-		)
+		.option("--tailwind-config <tailwindConfig>", "The name of the tailwind config")
 		.option("-f, --features <features>", "The name of the features")
 		.parse(process.argv);
 

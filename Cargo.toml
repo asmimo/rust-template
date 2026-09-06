@@ -1,12 +1,12 @@
 [workspace]
 members = [
-  # apps
-  "app/template_readonly",
-  # "app/image",
-  # libs
-  "libs/identifiers",
-  "libs/telemetry",
-  "libs/utils",
+	# apps
+	"app/template_readonly",
+	# "app/image",
+	# libs
+	"libs/identifiers",
+	"libs/telemetry",
+	"libs/utils",
 ]
 resolver = "2"
 
@@ -18,10 +18,7 @@ version = "0.1.1"
 anyhow = "1.0.104"
 axum = { version = "0.8.9", features = ["macros"] }
 axum-extra = { version = "0.12.6", features = ["form"] }
-chrono = { version = "0.4.45", default-features = false, features = [
-  "clock",
-  "serde",
-] }
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde"] }
 chrono-tz = { version = "0.10.4" }
 dotenvy = "0.15.7"
 futures = "0.3.34"
@@ -37,33 +34,25 @@ hypertext = { version = "0.12.1", features = ["axum"] }
 itertools = "0.15.0"
 num-traits = "0.2.19"
 rand = "0.10.2"
-reqwest = { version = "0.13.4", default-features = false, features = [
-  "rustls",
-  "json",
-] }
+reqwest = { version = "0.13.4", default-features = false, features = ["rustls", "json"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = { version = "1.0.151", features = ["preserve_order"] }
 sqlx = { version = "0.9.0", default-features = false, features = [
-  "postgres",
-  "runtime-tokio",
-  "tls-rustls",
-  "macros",
-  "migrate",
-  "bigdecimal",
-  "chrono",
-  "ipnetwork",
-  "json",
-  "uuid",
+	"postgres",
+	"runtime-tokio",
+	"tls-rustls",
+	"macros",
+	"migrate",
+	"bigdecimal",
+	"chrono",
+	"ipnetwork",
+	"json",
+	"uuid",
 ] }
 thiserror = { version = "2.0.18" }
 tokio = { version = "1.53.1", features = ["full"] }
 tower = { version = "0.5.3", features = ["timeout", "util"] }
-tower-http = { version = "0.7.0", features = [
-  "trace",
-  "fs",
-  "timeout",
-  "compression-full",
-] }
+tower-http = { version = "0.7.0", features = ["trace", "fs", "timeout", "compression-full"] }
 tower_governor = { version = "0.8.0" }
 tracing = "0.1.44"
 url = "2.5.8"

@@ -3,20 +3,22 @@ import { promisify } from "node:util";
 
 export const exec = promisify(cp.exec);
 
-export const spawnSafe = async (
+const resolvedCode = 0;
+const exitCode = 1;
+export const spawnSafe = (
 	program: string,
 	args: string[],
 	options: { cwd?: string } = {},
-) => {
-	return new Promise<void>((resolve, reject) => {
+): Promise<void> =>
+	new Promise<void>((resolve, reject) => {
 		const child = cp.spawn(program, args, {
-			stdio: "inherit",
 			shell: false,
+			stdio: "inherit",
 			...options,
 		});
 
 		child.on("close", (code) => {
-			if (code === 0) {
+			if (code === resolvedCode) {
 				resolve();
 			} else {
 				reject(new Error(`Command failed with exit code ${code}`));
@@ -27,9 +29,8 @@ export const spawnSafe = async (
 			reject(error);
 		});
 	});
-};
 
-export const catchError = (error: unknown) => {
+export const catchError = (error: unknown): void => {
 	if (error instanceof Error) {
 		if (error.name === "ExitPromptError") {
 			console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
@@ -38,10 +39,10 @@ export const catchError = (error: unknown) => {
 			if (error.stack) {
 				console.error(error.stack);
 			}
-			process.exit(1);
+			process.exit(exitCode);
 		}
 	} else {
 		console.error("An unexpected error occurred:", error);
-		process.exit(1);
+		process.exit(exitCode);
 	}
 };
