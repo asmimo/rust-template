@@ -113,7 +113,9 @@ impl MaxMindDB {
         headers: &axum::http::HeaderMap,
         header_string: &str,
     ) -> Option<String> {
-        let header_names = header_string.split(',').collect::<Vec<&str>>();
+        use itertools::Itertools;
+
+        let header_names = header_string.split(',').collect_vec();
 
         header_names.iter().find_map(|header_name| {
             headers.get(*header_name).and_then(|value| {

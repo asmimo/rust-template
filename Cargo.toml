@@ -34,6 +34,7 @@ hitbox-redis = "0.2.1"
 hitbox-reqwest = "0.2.0"
 hitbox-tower = "0.2.0"
 hypertext = { version = "0.12.1", features = ["axum"] }
+itertools = "0.15.0"
 num-traits = "0.2.19"
 rand = "0.10.2"
 reqwest = { version = "0.13.4", default-features = false, features = [
