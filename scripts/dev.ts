@@ -1,56 +1,38 @@
 import type { TomlTable } from "smol-toml";
-import {
-	type AppConfig,
-	catchError,
-	getApp,
-	getAppFeatures,
-	getCargoTOML,
-	getConfig,
-	getDirectoryFolders,
-	getPackageJSON,
-	getTailwindConfig,
-	runCommand,
-} from "./util.js";
+import type { AppConfig } from "./config.ts";
+import { getConfig } from "./config.ts";
+import { getCargoTOML, getDirectoryFolders, getPackageJSON } from "./fs.ts";
+import { catchError, spawnSafe } from "./process.ts";
+import { getApp, getAppFeatures, getTailwindConfig } from "./prompts.ts";
 
 const libsDir = await getDirectoryFolders("../libs");
 
 const buildWatchPaths = async (
 	app: string,
 	cargoToml: TomlTable | undefined,
-): Promise<string> => {
-	let watchApp = `-w public_script -w app/${app}`;
+): Promise<string[]> => {
+	const paths = ["public_script", `app/${app}`];
 
-	if (!cargoToml) return watchApp;
+	if (!cargoToml) return paths;
 
-	const watchPaths = new Set<string>();
-	const cargoTomlDependencies = cargoToml.dependencies || {};
+	const appDeps = cargoToml.dependencies;
+	if (typeof appDeps !== "object" || appDeps === null) return paths;
 
-	// Process each lib that's a direct dependency
-	for (const lib of libsDir) {
-		if (
-			typeof cargoTomlDependencies === "object" &&
-			cargoTomlDependencies !== null &&
-			lib in cargoTomlDependencies
-		) {
-			watchPaths.add(`-w libs/${lib}`);
+	const directLibDeps = libsDir.filter((lib) => lib in appDeps);
 
-			// Add lib's dependencies recursively
-			const libCargoToml = await getCargoTOML(`libs/${lib}`);
-			const libDeps = libCargoToml?.dependencies || {};
+	const libPaths = await Promise.all(
+		directLibDeps.map(async (lib) => {
+			const libToml = await getCargoTOML(`libs/${lib}`);
+			const libDeps = libToml?.dependencies;
+			const transitiveDeps =
+				typeof libDeps === "object" && libDeps !== null
+					? Object.keys(libDeps).filter((dep) => libsDir.includes(dep))
+					: [];
+			return [lib, ...transitiveDeps].map((d) => `libs/${d}`);
+		}),
+	);
 
-			for (const dep of Object.keys(libDeps)) {
-				if (libsDir.includes(dep)) {
-					watchPaths.add(`-w libs/${dep}`);
-				}
-			}
-		}
-	}
-
-	for (const path of watchPaths) {
-		watchApp += ` ${path}`;
-	}
-
-	return watchApp;
+	return [...paths, ...new Set(libPaths.flat())];
 };
 
 export const run = async (config: AppConfig) => {
@@ -63,23 +45,30 @@ export const run = async (config: AppConfig) => {
 	const packageJson = await getPackageJSON(app);
 
 	if (packageJson) {
-		const cmd = `cd app/${app} && bun run dev`;
-		await runCommand(cmd);
+		await spawnSafe("bun", ["run", "dev"], { cwd: `app/${app}` });
 	} else {
 		const tailwindConfig = await getTailwindConfig(
 			config.tailwindConfig || app,
 		);
 		process.env.TAILWIND_CONFIG = tailwindConfig;
 
-		const watchApp = await buildWatchPaths(app, cargoToml);
-		const featuresList = await getAppFeatures(cargoToml?.features || {});
+		const watchPaths = await buildWatchPaths(app, cargoToml);
+		const watchArgs = watchPaths.flatMap((p) => ["-w", p]);
 
+		const featuresList = await getAppFeatures(
+			cargoToml?.features,
+			config.features,
+		);
 		const features =
 			featuresList.length > 0 ? ` --features ${featuresList.join(",")}` : "";
 
-		const cmd = `watchexec -I -q ${watchApp} -r "bun run build.script -l silent & cargo run -p ${app}${features}"`;
-		console.log("Running command:", cmd);
-		await runCommand(cmd);
+		await spawnSafe("watchexec", [
+			"-I",
+			"-q",
+			...watchArgs,
+			"-r",
+			`bun run build.script -l silent & cargo run -p ${app}${features}`,
+		]);
 	}
 };
 
