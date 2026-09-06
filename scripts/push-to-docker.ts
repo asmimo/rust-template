@@ -43,12 +43,10 @@ export const pushToDocker = async (config: AppConfig) => {
 		);
 	} else {
 		const cargoToml = await getCargoTOML(`app/${app}`);
-		let featuresList: string[] = [];
-		if (config.features) {
-			featuresList = [config.features];
-		} else {
-			featuresList = await getAppFeatures(cargoToml?.features);
-		}
+		const featuresList = await getAppFeatures(
+			cargoToml?.features,
+			config.features,
+		);
 
 		const tailwindConfig = await getTailwindConfig(
 			config.tailwindConfig || app,

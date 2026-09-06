@@ -55,12 +55,10 @@ export const run = async (config: AppConfig) => {
 		const watchPaths = await buildWatchPaths(app, cargoToml);
 		const watchArgs = watchPaths.flatMap((p) => ["-w", p]);
 
-		let featuresList: string[] = [];
-		if (config.features) {
-			featuresList = [config.features];
-		} else {
-			featuresList = await getAppFeatures(cargoToml?.features);
-		}
+		const featuresList = await getAppFeatures(
+			cargoToml?.features,
+			config.features,
+		);
 		const features =
 			featuresList.length > 0 ? ` --features ${featuresList.join(",")}` : "";
 

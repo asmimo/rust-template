@@ -11,6 +11,10 @@ export const getApp = async (name?: string) => {
 		return name;
 	}
 
+	if (name) {
+		console.log(`App '${name}' is not valid.`);
+	}
+
 	const choices = apps.map((app) => ({ name: app, value: app }));
 
 	return await select({
@@ -19,16 +23,37 @@ export const getApp = async (name?: string) => {
 	});
 };
 
-export const getAppFeatures = async (features?: TomlValue) => {
+export const getAppFeatures = async (
+	features?: TomlValue,
+	configFeatures?: string,
+) => {
 	if (features && typeof features === "object" && features !== null) {
-		const choices = Object.keys(features)
-			.filter((feature) => feature !== "default")
-			.map((feature) => ({ name: feature, value: feature }));
+		const tomlFeatures = Object.keys(features);
 
-		if (choices.length > 0) {
+		let validFeaturesList: string[] = [];
+		if (configFeatures) {
+			const requested = configFeatures.split(",");
+			const invalid = requested.filter((f) => !tomlFeatures.includes(f));
+			if (invalid.length > 0) {
+				console.warn(`Unknown features ignored: ${invalid.join(", ")}`);
+			}
+			validFeaturesList = requested.filter((f) => tomlFeatures.includes(f));
+		}
+
+		if (validFeaturesList.length > 0) {
+			return validFeaturesList;
+		}
+
+		if (tomlFeatures.length > 0) {
 			return await checkbox({
 				message: "Choose features",
-				choices,
+				choices: tomlFeatures
+					.filter((feature) => feature !== "default")
+					.map((feature) => ({
+						name: feature,
+						value: feature,
+						checked: validFeaturesList.includes(feature),
+					})),
 			});
 		}
 	}
