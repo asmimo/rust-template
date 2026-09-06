@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { type TomlTable, parse } from "smol-toml";
+import type { PackageJson } from "type-fest";
 
 export const getDirectoryFolders = async (
 	dir: string,
@@ -44,7 +45,7 @@ export const getDockerfile = async (app: string): Promise<string | undefined> =>
 	return fs.readFile(dockerfilePath, "utf8");
 };
 
-export const getPackageJSON = async (app: string): Promise<string | undefined> => {
+export const getPackageJSON = async (app: string): Promise<PackageJson | undefined> => {
 	const packageJsonPath = path.join(import.meta.dirname, "../app", app, "package.json");
 
 	try {
