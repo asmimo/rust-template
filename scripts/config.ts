@@ -95,7 +95,7 @@ export const getConfig = async (): Promise<Config> => {
 		.parse(process.argv);
 
 	const options = program.opts<AppConfig>();
-	const env = await getEnv(options.env || "development");
+	const env = await getEnv(options.env);
 	const configFromToml = await getConfigFromToml(env);
 
 	if (configFromToml) {
