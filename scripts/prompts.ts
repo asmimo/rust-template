@@ -42,7 +42,9 @@ export const getAppFeatures = async (
 		let validFeaturesList: string[] = [];
 		if (configFeatures) {
 			const requested: string[] =
-				typeof configFeatures === "string" ? configFeatures.split(",") : configFeatures;
+				typeof configFeatures === "string"
+					? configFeatures.split(",").map((feature) => feature.trim())
+					: configFeatures;
 			validFeaturesList = validateFeatures(requested, tomlFeatures);
 		}
 
