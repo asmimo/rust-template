@@ -1,7 +1,7 @@
 import type { TomlTable } from "smol-toml";
 import type { SetRequired } from "type-fest";
 
-import { type AppConfig, getConfig } from "./config.ts";
+import { type AppConfig, type Config, getConfig } from "./config.ts";
 import { getCargoTOML, getDirectoryFolders, getPackageJSON } from "./fs.ts";
 import { catchError, spawnSafe } from "./process.ts";
 import { getApp, getAppFeatures, getTailwindConfig } from "./prompts.ts";
@@ -40,7 +40,7 @@ const buildWatchPaths = async (
 	return [...paths, ...new Set(libPaths.flat())];
 };
 
-const runApp = async (config: SetRequired<AppConfig, "app">): Promise<void> => {
+const runApp = async (config: SetRequired<AppConfig, "app" | "tailwindConfig">): Promise<void> => {
 	const { app } = config;
 	const cargoToml = await getCargoTOML(`app/${app}`);
 
@@ -50,6 +50,7 @@ const runApp = async (config: SetRequired<AppConfig, "app">): Promise<void> => {
 	const featuresList = await getAppFeatures(cargoToml?.features, config.features);
 	const features = featuresList.length > 0 ? ` --features ${featuresList.join(",")}` : "";
 
+	console.log(`Running ${config.app} with tailwind config ${config.tailwindConfig}`);
 	await spawnSafe("watchexec", [
 		"-I",
 		"-q",
@@ -59,21 +60,22 @@ const runApp = async (config: SetRequired<AppConfig, "app">): Promise<void> => {
 	]);
 };
 
-export const run = async (config: AppConfig): Promise<void> => {
-	if (config.env === "production") {
+export const run = async (config: Config): Promise<void> => {
+	if (config.app.env === "production") {
 		throw new Error("This script is not supported in production mode.");
 	}
-	const app = await getApp(config.app);
+	const app = await getApp(config.app.app);
 
 	const packageJson = await getPackageJSON(app);
 
 	if (packageJson) {
+		console.log(`Running ${app}`);
 		await spawnSafe("bun", ["run", "dev"], { cwd: `app/${app}` });
 	} else {
-		config.tailwindConfig = await getTailwindConfig(config.tailwindConfig || app);
-		process.env.TAILWIND_CONFIG = config.tailwindConfig;
+		config.app.tailwindConfig = await getTailwindConfig(config.app.tailwindConfig || app);
+		process.env.TAILWIND_CONFIG = config.app.tailwindConfig;
 
-		await runApp({ ...config, app });
+		await runApp({ ...config.app, app, tailwindConfig: config.app.tailwindConfig });
 	}
 };
 

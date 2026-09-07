@@ -1,20 +1,26 @@
 import input from "@inquirer/input";
 import type { SetRequired } from "type-fest";
 
-import { type AppConfig, getConfig } from "./config.ts";
+import { type AppConfig, type Config, getConfig } from "./config.ts";
 import { getCargoTOML, getDockerfile } from "./fs.ts";
 import { catchError, spawnSafe } from "./process.ts";
 import { getApp, getAppFeatures, getTailwindConfig } from "./prompts.ts";
 
-const getImageName = async (defaultApp: string): Promise<string> => {
+const getImageName = async (
+	defaultOrg?: string,
+	defaultName?: string,
+	defaultTag?: string,
+): Promise<string> => {
 	const dockerOrg = await input({
+		default: defaultOrg,
 		message: "Enter the docker org",
 	});
 	const imageName = await input({
+		default: defaultName,
 		message: "Enter the image name",
 	});
 	const imageTag = await input({
-		default: defaultApp,
+		default: defaultTag,
 		message: "Enter the image tag",
 	});
 	return `${dockerOrg}/${imageName}:${imageTag}`;
@@ -57,13 +63,18 @@ const runDockerBuild = async (
 	);
 };
 
-export const pushToDocker = async (config: AppConfig): Promise<void> => {
-	const app = await getApp(config.app);
-	if (!app) {
-		throw new Error("app not found");
+export const pushToDocker = async (config: Config): Promise<void> => {
+	if (config.app.env === "development") {
+		throw new Error("This script is not supported in development mode.");
 	}
 
-	const fullImageName = await getImageName(app);
+	const app = await getApp(config.app.app);
+
+	const fullImageName = await getImageName(
+		config.docker?.org,
+		config.docker?.image,
+		config.docker?.tag,
+	);
 	const appDockerFile = await getDockerfile(app);
 
 	if (appDockerFile) {
@@ -71,7 +82,7 @@ export const pushToDocker = async (config: AppConfig): Promise<void> => {
 			cwd: `app/${app}`,
 		});
 	} else {
-		const buildArgs = await buildDockerArgs({ ...config, app });
+		const buildArgs = await buildDockerArgs({ ...config.app, app });
 		await runDockerBuild(fullImageName, {
 			buildArgs,
 		});

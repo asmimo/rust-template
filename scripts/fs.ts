@@ -19,8 +19,8 @@ export const getDirectoryFolders = async (
 	});
 };
 
-export const getCargoTOML = async (dir: string): Promise<TomlTable | undefined> => {
-	const tomlPath = path.join(import.meta.dirname, "../", dir, "Cargo.toml");
+export const getTOML = async (dir: string): Promise<TomlTable | undefined> => {
+	const tomlPath = path.join(import.meta.dirname, dir);
 
 	try {
 		await fs.access(tomlPath);
@@ -32,6 +32,9 @@ export const getCargoTOML = async (dir: string): Promise<TomlTable | undefined> 
 
 	return parse(tomlContent);
 };
+
+export const getCargoTOML = async (dir: string): Promise<TomlTable | undefined> =>
+	await getTOML(`../${dir}/Cargo.toml`);
 
 export const getDockerfile = async (app: string): Promise<string | undefined> => {
 	const dockerfilePath = path.join(import.meta.dirname, "../app", app, "Dockerfile");

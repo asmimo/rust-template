@@ -1,0 +1,14 @@
+[dev]
+app = ""
+tailwindConfig = ""
+features = []
+
+[docker]
+org = ""
+image = ""
+tag = ""
+
+[docker.app]
+app = ""
+tailwindConfig = ""
+features = []

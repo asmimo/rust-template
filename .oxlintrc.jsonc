@@ -10,10 +10,7 @@
 		"suspicious": "warn",
 	},
 	"rules": {
-		"one-var": "off",
-		"oxc/no-async-await": "off",
-		"oxc/no-optional-chaining": "off",
-		"oxc/no-rest-spread-properties": "off",
+		"max-statements": ["warn", 16],
 		"no-magic-numbers": [
 			"warn",
 			{
@@ -21,6 +18,11 @@
 			},
 		],
 		"no-ternary": "off",
+		"no-undefined": "off",
+		"one-var": "off",
+		"oxc/no-async-await": "off",
+		"oxc/no-optional-chaining": "off",
+		"oxc/no-rest-spread-properties": "off",
 		"sort-imports": [
 			"warn",
 			{
@@ -30,15 +32,15 @@
 	},
 	"overrides": [
 		{
-			"files": ["public/taboola_*.js"],
-			"rules": {
-				"unicorn/filename-case": ["off"],
-			},
-		},
-		{
 			"files": ["scripts/**/*"],
 			"rules": {
 				"no-console": "off",
+			},
+		},
+		{
+			"files": ["public/taboola_*.js"],
+			"rules": {
+				"unicorn/filename-case": ["off"],
 			},
 		},
 		{
