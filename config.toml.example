@@ -8,7 +8,6 @@ org = ""
 image = ""
 tag = ""
 
-[docker.app]
 app = ""
 tailwindConfig = ""
 features = []
