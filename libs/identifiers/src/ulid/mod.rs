@@ -55,6 +55,7 @@ pub type Id = String;
 ///
 /// This function is very fast (~100ns) and suitable for high-throughput scenarios.
 /// Multiple calls within the same millisecond will produce monotonically increasing ULIDs.
+#[tracing::instrument(name = "ulid::generate")]
 pub fn generate() -> Id {
     let ulid = Ulid::generate();
 

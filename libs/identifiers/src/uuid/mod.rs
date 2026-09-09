@@ -60,6 +60,7 @@ pub type Id = uuid::Uuid;
 /// # Compatibility
 ///
 /// Fully compatible with existing UUID infrastructure, parsers, and databases.
+#[tracing::instrument(name = "uuid::generate")]
 pub fn generate() -> Id {
     uuid::Uuid::now_v7()
 }
