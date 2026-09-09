@@ -7,13 +7,16 @@
 		"clean:js": "rm -rf node_modules && rm -rf bun.lock",
 		"clean:rust": "rm -rf Cargo.lock && cargo clean",
 		"clean:all": "bun clean:js && bun clean:rust",
-		"dev": "bun ./scripts/dev.ts",
+		"dev": "bun ./scripts/dev.ts --env development",
 		"build:script": "tsc && vite build",
-		"build:docker": "bun ./scripts/push-to-docker.ts",
+		"build:docker": "bun ./scripts/push-to-docker.ts --env production",
 		"format:rust": "cargo fmt",
 		"format:js": "bunx oxfmt",
+		"format:all": "bun format:rust && bun format:js",
 		"lint:js": "bunx oxlint",
-		"lint:js.fix": "bunx oxlint --fix"
+		"lint:rust.fix": "cargo clippy --fix",
+		"lint:js.fix": "bunx oxlint --fix",
+		"lint:all.fix": "bun lint:js.fix && bun lint:rust.fix"
 	},
 	"dependencies": {
 		"type-fest": "^5.9.0"
@@ -35,6 +38,7 @@
 		"smol-toml": "1.8.0",
 		"tailwindcss": "4.3.3",
 		"tailwindcss-animated": "2.1.0",
+		"valibot": "^1.4.2",
 		"vite": "8.2.2"
 	},
 	"peerDependencies": {

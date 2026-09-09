@@ -1,1 +1,17 @@
 @import "./base.css";
+
+@source "../app/template_readonly";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@plugin "daisyui" {
+	themes:
+		light --default,
+		dark --prefersdark;
+}
+
+@theme {
+	/*--font-sans:
+		"Poppins", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+		"Segoe UI Symbol", "Noto Color Emoji";*/
+}

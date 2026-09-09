@@ -6,15 +6,21 @@ import { getCargoTOML, getDockerfile } from "./fs.ts";
 import { catchError, spawnSafe } from "./process.ts";
 import { getApp, getAppFeatures, getTailwindConfig } from "./prompts.ts";
 
-const getImageName = async (defaultApp: string): Promise<string> => {
+const getImageName = async (
+	defaultOrg?: string,
+	defaultName?: string,
+	defaultTag?: string,
+): Promise<string> => {
 	const dockerOrg = await input({
+		default: defaultOrg,
 		message: "Enter the docker org",
 	});
 	const imageName = await input({
+		default: defaultName,
 		message: "Enter the image name",
 	});
 	const imageTag = await input({
-		default: defaultApp,
+		default: defaultTag,
 		message: "Enter the image tag",
 	});
 	return `${dockerOrg}/${imageName}:${imageTag}`;
@@ -23,15 +29,16 @@ const getImageName = async (defaultApp: string): Promise<string> => {
 const buildDockerArgs = async (config: SetRequired<AppConfig, "app">): Promise<string[]> => {
 	const { app } = config;
 	const cargoToml = await getCargoTOML(`app/${app}`);
-	const featuresList = await getAppFeatures(cargoToml?.features, config.features);
-	const tailwindConfig = await getTailwindConfig(config.tailwindConfig || app);
+	config.features = await getAppFeatures(cargoToml?.features, config.features);
+	config.tailwindConfig = await getTailwindConfig(config.tailwindConfig || app);
+	const { features, tailwindConfig } = config;
 
 	return [
 		"--build-arg",
 		`APP=${app}`,
 		"--build-arg",
 		`TAILWIND_CONFIG=${tailwindConfig}`,
-		...(featuresList.length > 0 ? ["--build-arg", `FEATURES=${featuresList.join(",")}`] : []),
+		...(features.length > 0 ? ["--build-arg", `FEATURES=${features.join(",")}`] : []),
 	];
 };
 
@@ -58,20 +65,24 @@ const runDockerBuild = async (
 };
 
 export const pushToDocker = async (config: AppConfig): Promise<void> => {
-	const app = await getApp(config.app);
-	if (!app) {
-		throw new Error("app not found");
+	if (config.env === "development") {
+		throw new Error("This script is not supported in development mode.");
 	}
 
-	const fullImageName = await getImageName(app);
+	const app = await getApp(config.app);
 	const appDockerFile = await getDockerfile(app);
 
 	if (appDockerFile) {
+		const fullImageName = await getImageName(config.org, config.image || app, config.tag);
 		await runDockerBuild(fullImageName, {
 			cwd: `app/${app}`,
 		});
 	} else {
-		const buildArgs = await buildDockerArgs({ ...config, app });
+		const appConfig = { ...config, app };
+		const buildArgs = await buildDockerArgs(appConfig);
+		const fullImageName = await getImageName(config.org, config.image || app, config.tag);
+
+		console.inspect(appConfig);
 		await runDockerBuild(fullImageName, {
 			buildArgs,
 		});

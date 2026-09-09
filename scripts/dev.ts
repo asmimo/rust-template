@@ -40,16 +40,18 @@ const buildWatchPaths = async (
 	return [...paths, ...new Set(libPaths.flat())];
 };
 
-const runApp = async (config: SetRequired<AppConfig, "app">): Promise<void> => {
+const runApp = async (config: SetRequired<AppConfig, "app" | "tailwindConfig">): Promise<void> => {
 	const { app } = config;
 	const cargoToml = await getCargoTOML(`app/${app}`);
 
 	const watchPaths = await buildWatchPaths(app, cargoToml);
 	const watchArgs = watchPaths.flatMap((path) => ["-w", path]);
 
-	const featuresList = await getAppFeatures(cargoToml?.features, config.features);
-	const features = featuresList.length > 0 ? ` --features ${featuresList.join(",")}` : "";
+	config.features = await getAppFeatures(cargoToml?.features, config.features);
+	const { features: configFeatures } = config;
+	const features = configFeatures.length > 0 ? ` --features ${configFeatures.join(",")}` : "";
 
+	console.inspect(config);
 	await spawnSafe("watchexec", [
 		"-I",
 		"-q",
@@ -70,10 +72,10 @@ export const run = async (config: AppConfig): Promise<void> => {
 	if (packageJson) {
 		await spawnSafe("bun", ["run", "dev"], { cwd: `app/${app}` });
 	} else {
-		config.tailwindConfig = await getTailwindConfig(config.tailwindConfig || app);
-		process.env.TAILWIND_CONFIG = config.tailwindConfig;
+		const tailwindConfig = await getTailwindConfig(config.tailwindConfig || app);
+		process.env.TAILWIND_CONFIG = tailwindConfig;
 
-		await runApp({ ...config, app });
+		await runApp({ ...config, app, tailwindConfig });
 	}
 };
 

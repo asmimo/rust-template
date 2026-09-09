@@ -34,14 +34,17 @@ const validateFeatures = (features: string[], validFeatures: string[]): string[]
 
 export const getAppFeatures = async (
 	features?: TomlValue,
-	configFeatures?: string,
+	configFeatures?: string | string[],
 ): Promise<string[]> => {
 	if (features && typeof features === "object" && features !== null) {
 		const tomlFeatures = Object.keys(features).filter((feature) => feature !== "default");
 
 		let validFeaturesList: string[] = [];
 		if (configFeatures) {
-			const requested = configFeatures.split(",");
+			const requested: string[] =
+				typeof configFeatures === "string"
+					? configFeatures.split(",").map((feature) => feature.trim())
+					: configFeatures;
 			validFeaturesList = validateFeatures(requested, tomlFeatures);
 		}
 
