@@ -81,6 +81,7 @@ const ALPHANUMERIC_ALPHABET: &[char] = &[
 ///
 /// Uses cryptographically secure random number generation. With the default 21-character
 /// length, collision probability is negligible for practical applications.
+#[tracing::instrument(name = "nanoid::generate")]
 pub fn generate() -> Id {
     nanoid::nanoid!(21, ALPHANUMERIC_ALPHABET)
 }
