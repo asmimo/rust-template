@@ -58,7 +58,6 @@ impl AppStateInner {
 }
 
 #[tokio::main]
-/// Starts the HTTP server and configures its routes and middleware.
 async fn main() -> Result<(), app_error::AppError> {
     dotenvy::from_filename(".env").ok();
 

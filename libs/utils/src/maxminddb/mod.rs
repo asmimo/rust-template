@@ -28,7 +28,6 @@ pub struct MaxMindDB {
 }
 
 impl MaxMindDB {
-    /// Creates a MaxMind client using header configuration from the environment.
     pub fn init() -> Self {
         Self {
             client_ip_header: get_client_ip_header(),
@@ -37,7 +36,6 @@ impl MaxMindDB {
         }
     }
 
-    /// Sets the timezone returned when a client-specific timezone cannot be resolved.
     pub fn with_default_timezone(mut self, timezone: impl Into<String>) -> MaxmindDbResult<Self> {
         self.default_timezone = TimeZone::get(&timezone.into())?;
 
@@ -77,7 +75,6 @@ impl MaxMindDB {
     }
 
     #[cfg(feature = "maxminddb-axum")]
-    /// Resolves a client timezone from configured headers or falls back to the default.
     #[tracing::instrument(skip(self, headers))]
     pub async fn get_timezone(&self, headers: &axum::http::HeaderMap) -> (TimeZone, bool) {
         tracing::debug!("Headers: {headers:?}");
