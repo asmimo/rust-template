@@ -101,12 +101,9 @@ impl MaxMindDB {
             None
         };
 
-        // let timezone = timezone
-        //     .and_then(|t| t.parse().ok())
-        //     .unwrap_or(self.default_timezone);
         let timezone = timezone
             .and_then(|t| TimeZone::get(&t).ok())
-            .unwrap_or(TimeZone::UTC);
+            .unwrap_or(self.default_timezone.clone());
 
         (timezone, is_fallback)
     }
