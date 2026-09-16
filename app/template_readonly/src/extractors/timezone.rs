@@ -1,28 +1,20 @@
-use std::{convert::Infallible, sync::Arc};
-
 use axum::extract::FromRequestParts;
-use chrono_tz::Tz;
+use jiff::tz::TimeZone;
 
 use crate::AppState;
 
-pub struct Timezone(pub (Tz, bool));
+pub struct Timezone(pub (TimeZone, bool));
 
-impl<S> FromRequestParts<S> for Timezone
-where
-    AppState: From<S>,
-    S: Send + Sync + Clone,
-{
-    type Rejection = Infallible;
+impl FromRequestParts<AppState> for Timezone {
+    type Rejection = std::convert::Infallible;
 
     #[tracing::instrument(name = "extract_timezone", skip(parts, state))]
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
-        state: &S,
+        state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        let app_state = Arc::from(state.clone());
+        let timezone = state.maxminddb.get_timezone(&parts.headers).await;
 
-        let t = app_state.maxminddb.get_timezone(&parts.headers).await;
-
-        Ok(Timezone(t))
+        Ok(Timezone(timezone))
     }
 }

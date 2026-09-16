@@ -4,21 +4,9 @@ mod routes;
 mod templates;
 mod tracing_telemetry;
 
-use std::{convert::Infallible, sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use axum::{Router, body::Body, http, response::IntoResponse, routing, serve};
-use hitbox::{
-    Config, Neutral,
-    concurrency::BroadcastConcurrencyManager,
-    policy::{PolicyConfig, StalePolicy},
-};
-use hitbox_backend::format::BincodeFormat;
-use hitbox_http::{
-    CacheableHttpResponse, extractors::Method as MethodExtractor,
-    predicates::request::Method as RequestMethod,
-};
-use hitbox_moka::MokaBackend;
-use hitbox_tower::Cache;
 use reqwest::{Client, ClientBuilder};
 use sqlx::{PgPool, postgres::PgPoolOptions};
 use tower::ServiceExt;
@@ -94,33 +82,10 @@ async fn main() -> Result<(), app_error::AppError> {
         .on_response(trace::DefaultOnResponse::new().level(tracing::Level::INFO))
         .on_failure(trace::DefaultOnFailure::new().level(tracing::Level::ERROR));
 
-    let cache_backend = MokaBackend::builder()
-        .max_entries(10_000)
-        .value_format(BincodeFormat)
-        .build();
-    let policy_config = PolicyConfig::builder()
-        .ttl(Duration::from_secs(30))
-        .stale(Duration::from_secs(60))
-        .stale_policy(StalePolicy::OffloadRevalidate)
-        .build();
-    let concurrency_manager: BroadcastConcurrencyManager<_> =
-        BroadcastConcurrencyManager::<Result<CacheableHttpResponse<Body>, Infallible>>::new();
-    let config = Config::builder()
-        .request_predicate(RequestMethod::new(http::Method::GET).unwrap())
-        .response_predicate(Neutral::new())
-        .extractor(MethodExtractor::new())
-        .policy(policy_config)
-        .build();
-    let cache = Cache::builder()
-        .backend(cache_backend)
-        .config(config)
-        .concurrency_manager(concurrency_manager)
-        .build();
-
     tracing::info!("Configuring server");
     let mut app = Router::new()
         // .route("/", routing::get(index))
-        .route("/", routing::get(routes::index).layer(cache));
+        .route("/", routing::get(routes::index));
 
     let limiter = GovernorConfigBuilder::default()
         .const_period(std::time::Duration::from_millis(500))

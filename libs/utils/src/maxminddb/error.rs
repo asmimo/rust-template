@@ -15,7 +15,7 @@ pub enum MaxmindDbError {
     MaxMindDB(#[from] maxminddb::MaxMindDbError),
 
     #[error(transparent)]
-    ParseError(#[from] chrono_tz::ParseError),
+    ParseError(#[from] jiff::Error),
 
     #[error("Custom Error: {0}")]
     Custom(String),

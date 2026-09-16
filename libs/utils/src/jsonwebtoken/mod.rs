@@ -1,4 +1,5 @@
-use jsonwebtoken::errors::Error;
+use jiff::ToSpan;
+use jsonwebtoken::errors::{Error, ErrorKind};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8,13 +9,14 @@ pub struct Claims {
     pub iat: i64,
 }
 pub fn encode_jwt(secret: &str, email: String) -> Result<String, Error> {
-    let now = chrono::Utc::now();
-    let expires_in = chrono::Duration::hours(24);
-    let exp = now + expires_in;
+    let now = jiff::Timestamp::now();
+    let exp = now
+        .checked_add(24.hours())
+        .map_err(|err| ErrorKind::Provider(err.to_string()))?;
 
     let claims = Claims {
-        iat: now.timestamp(),
-        exp: exp.timestamp(),
+        iat: now.as_second(),
+        exp: exp.as_second(),
         email,
     };
 

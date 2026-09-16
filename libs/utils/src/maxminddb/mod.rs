@@ -1,7 +1,7 @@
 use std::{net::IpAddr, sync::OnceLock};
 
-use chrono_tz::{Tz, UTC};
 use flate2::read::GzDecoder;
+use jiff::tz::TimeZone;
 use maxminddb::{Reader, geoip2::City};
 use tar::Archive;
 use tokio::sync::OnceCell;
@@ -24,7 +24,7 @@ pub struct MaxMindDB {
     #[cfg_attr(debug_assertions, allow(unused))]
     client_ip_header: &'static String,
     client_timezone_header: Option<String>,
-    default_timezone: Tz,
+    default_timezone: TimeZone,
 }
 
 impl MaxMindDB {
@@ -32,12 +32,12 @@ impl MaxMindDB {
         Self {
             client_ip_header: get_client_ip_header(),
             client_timezone_header: env::get_env("CLIENT_TIMEZONE_HEADER").ok(),
-            default_timezone: UTC,
+            default_timezone: TimeZone::UTC,
         }
     }
 
     pub fn with_default_timezone(mut self, timezone: impl Into<String>) -> MaxmindDbResult<Self> {
-        self.default_timezone = timezone.into().parse()?;
+        self.default_timezone = TimeZone::get(&timezone.into())?;
 
         Ok(self)
     }
@@ -76,7 +76,7 @@ impl MaxMindDB {
 
     #[cfg(feature = "maxminddb-axum")]
     #[tracing::instrument(skip(self, headers))]
-    pub async fn get_timezone(&self, headers: &axum::http::HeaderMap) -> (Tz, bool) {
+    pub async fn get_timezone(&self, headers: &axum::http::HeaderMap) -> (TimeZone, bool) {
         tracing::debug!("Headers: {headers:?}");
         let mut is_fallback = false;
         let timezone = if let Some(client_timezone_header) = &self.client_timezone_header
@@ -94,16 +94,19 @@ impl MaxMindDB {
             Some(timezone.to_string())
         } else {
             tracing::debug!(
-                "Timezone not found: Using default timezone: {}",
-                self.default_timezone
+                "Timezone not found: Using default timezone: {:?}",
+                self.default_timezone.iana_name()
             );
             is_fallback = true;
             None
         };
 
+        // let timezone = timezone
+        //     .and_then(|t| t.parse().ok())
+        //     .unwrap_or(self.default_timezone);
         let timezone = timezone
-            .and_then(|t| t.parse().ok())
-            .unwrap_or(self.default_timezone);
+            .and_then(|t| TimeZone::get(&t).ok())
+            .unwrap_or(TimeZone::UTC);
 
         (timezone, is_fallback)
     }
