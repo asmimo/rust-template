@@ -6,13 +6,12 @@ version.workspace = true
 [features]
 default = []
 
-jsonwebtoken = ["dep:chrono", "dep:jsonwebtoken", "dep:serde"]
+jsonwebtoken = ["dep:jiff", "dep:jsonwebtoken", "dep:serde"]
 lettre = ["dep:lettre", "dep:tokio"]
 maxminddb = [
-	"dep:chrono",
-	"dep:chrono-tz",
 	"dep:flate2",
 	"dep:ip-discovery",
+	"dep:jiff",
 	"dep:maxminddb",
 	"dep:reqwest",
 	"dep:tar",
@@ -22,9 +21,8 @@ maxminddb-axum = ["maxminddb", "dep:axum", "dep:itertools"]
 
 [dependencies]
 axum = { workspace = true, optional = true }
-chrono = { workspace = true, optional = true }
-chrono-tz = { workspace = true, optional = true }
 itertools = { workspace = true, optional = true }
+jiff = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 thiserror = { workspace = true }
@@ -32,8 +30,8 @@ tokio = { workspace = true, optional = true }
 tracing = { workspace = true }
 
 flate2 = { version = "1.1.10", optional = true }
-ip-discovery = { version = "0.5.0", optional = true, features = ["async"] }
-jsonwebtoken = { version = "11.0.0", optional = true }
+ip-discovery = { version = "0.5.1", optional = true, features = ["async"] }
+jsonwebtoken = { version = "11.1.0", optional = true }
 lettre = { version = "0.11.23", optional = true, default-features = false, features = [
 	"builder",
 	"hostname",
@@ -42,5 +40,5 @@ lettre = { version = "0.11.23", optional = true, default-features = false, featu
 	"tokio1",
 	"tokio1-rustls-tls",
 ] }
-maxminddb = { version = "0.30.3", optional = true }
+maxminddb = { version = "0.32.0", optional = true }
 tar = { version = "0.4.46", optional = true }

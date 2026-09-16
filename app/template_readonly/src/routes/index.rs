@@ -6,11 +6,13 @@ use hypertext::prelude::*;
 #[tracing::instrument(skip(_state))]
 pub async fn index(
     State(_state): State<AppState>,
-    Timezone(timezone): Timezone,
+    Timezone((timezone, _)): Timezone,
 ) -> Result<impl IntoResponse, app_error::AppError> {
     let t = rsx! {
         <div>"Hello, world!"</div>
-        <div>(format!("{timezone:?}"))</div>
+        @if let Some(timezone) = timezone.iana_name() {
+            <div>"Timezone: " (timezone)</div>
+        }
     };
 
     let layout = templates::layout(&t);
