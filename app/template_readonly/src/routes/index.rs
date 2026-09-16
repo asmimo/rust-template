@@ -3,6 +3,7 @@ use axum::{extract::State, response::IntoResponse};
 use crate::{AppState, app_error, extractors::timezone::Timezone, templates};
 use hypertext::prelude::*;
 
+/// Renders the index page with the client's IANA timezone when available.
 #[tracing::instrument(skip(_state))]
 pub async fn index(
     State(_state): State<AppState>,

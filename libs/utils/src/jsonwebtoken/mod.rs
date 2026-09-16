@@ -8,6 +8,8 @@ pub struct Claims {
     pub exp: i64,
     pub iat: i64,
 }
+
+/// Encodes an email claim into a JSON Web Token that expires after 24 hours.
 pub fn encode_jwt(secret: &str, email: String) -> Result<String, Error> {
     let now = jiff::Timestamp::now();
     let exp = now
