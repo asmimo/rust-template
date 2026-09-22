@@ -20,4 +20,4 @@ opentelemetry-semantic-conventions = { version = "0.33.0" }
 opentelemetry_sdk = { version = "0.33.0", features = ["rt-tokio"] }
 
 # Exporters - using compatible versions
-opentelemetry-otlp = { version = "0.33.0", features = ["grpc-tonic", "tls-provider-agnostic"] }
+opentelemetry-otlp = { version = "0.33.0", features = ["grpc-tonic", "tls-aws-lc"] }

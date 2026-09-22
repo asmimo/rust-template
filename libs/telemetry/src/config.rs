@@ -103,6 +103,6 @@ impl TelemetryConfig {
     }
 
     pub fn get_tls_config() -> ClientTlsConfig {
-        ClientTlsConfig::new()
+        ClientTlsConfig::new().with_enabled_roots()
     }
 }
