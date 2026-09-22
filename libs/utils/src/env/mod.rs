@@ -3,15 +3,26 @@ use std::env;
 mod error;
 
 pub use error::EnvError;
+
 pub fn get_env(key: &str) -> Result<String, EnvError> {
-    env::var(key).map_err(|e| match e {
-        env::VarError::NotPresent => EnvError::NotFound {
-            key: key.to_string(),
-        },
-        env::VarError::NotUnicode(_) => EnvError::InvalidUtf8 {
-            key: key.to_string(),
-        },
-    })
+    env::var(key)
+        .map_err(|e| match e {
+            env::VarError::NotPresent => EnvError::NotFound {
+                key: key.to_string(),
+            },
+            env::VarError::NotUnicode(_) => EnvError::InvalidUtf8 {
+                key: key.to_string(),
+            },
+        })
+        .and_then(|v| {
+            if v.is_empty() {
+                Err(EnvError::NotFound {
+                    key: key.to_string(),
+                })
+            } else {
+                Ok(v)
+            }
+        })
 }
 
 pub fn get_env_or_default(key: &str, default: String) -> String {
