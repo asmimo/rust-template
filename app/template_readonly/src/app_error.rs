@@ -12,9 +12,6 @@ pub enum AppError {
     SerdeJson(#[from] serde_json::Error),
 
     #[error(transparent)]
-    Sqlx(#[from] sqlx::Error),
-
-    #[error(transparent)]
     HttpClient(#[from] reqwest::Error),
 
     #[error(transparent)]
@@ -46,11 +43,6 @@ impl IntoResponse for AppError {
             }
             AppError::SerdeJson(err) => {
                 tracing::error!("De/Serialization error: {err}");
-
-                (http::StatusCode::INTERNAL_SERVER_ERROR, None)
-            }
-            AppError::Sqlx(err) => {
-                tracing::error!("SQLx error: {err}");
 
                 (http::StatusCode::INTERNAL_SERVER_ERROR, None)
             }

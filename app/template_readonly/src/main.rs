@@ -8,7 +8,6 @@ use std::sync::Arc;
 
 use axum::{Router, body::Body, http, response::IntoResponse, routing, serve};
 use reqwest::{Client, ClientBuilder};
-use sqlx::{PgPool, postgres::PgPoolOptions};
 use tower::ServiceExt;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 use tower_http::{compression::CompressionLayer, services::ServeDir, timeout::TimeoutLayer, trace};
@@ -18,7 +17,6 @@ use crate::extractors::rate_limiter;
 
 #[allow(dead_code)]
 pub struct AppStateInner {
-    pool: PgPool,
     http_client: Client,
     maxminddb: MaxMindDB,
     lettre: Option<Lettre>,
@@ -28,15 +26,7 @@ type AppState = Arc<AppStateInner>;
 
 impl AppStateInner {
     pub async fn init() -> Result<Self, app_error::AppError> {
-        let db_url = env::get_env("DATABASE_URL")?;
-
-        let (pool, http_client, maxminddb, lettre) = tokio::join!(
-            PgPoolOptions::new()
-                // .max_connections(16)
-                .acquire_timeout(std::time::Duration::from_secs(30))
-                .idle_timeout(std::time::Duration::from_secs(600))
-                .test_before_acquire(true)
-                .connect(&db_url),
+        let (http_client, maxminddb, lettre) = tokio::join!(
             async { ClientBuilder::new().build() },
             async { MaxMindDB::init() },
             async { Lettre::init() }
@@ -49,7 +39,6 @@ impl AppStateInner {
             .ok();
 
         Ok(Self {
-            pool: pool?,
             http_client: http_client?,
             maxminddb,
             lettre,
@@ -61,7 +50,8 @@ impl AppStateInner {
 async fn main() -> Result<(), app_error::AppError> {
     dotenvy::from_filename(".env").ok();
 
-    let service_name = utils::env::get_env("OTEL_SERVICE_NAME")?;
+    let service_name =
+        utils::env::get_env_or_default("OTEL_SERVICE_NAME", env!("CARGO_PKG_NAME").to_string());
     tracing_telemetry::init_tracing_with_opentelemetry_subscriber(service_name)
         .expect("Failed to set tracing subscriber with opentelemetry");
 
