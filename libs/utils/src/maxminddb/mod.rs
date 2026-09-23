@@ -16,7 +16,7 @@ pub mod error;
 #[cfg(debug_assertions)]
 static LOCAL_IP: OnceLock<Option<String>> = OnceLock::new();
 
-static MAXMINDDB: OnceCell<MaxmindDbResult<Reader<Vec<u8>>>> = OnceCell::const_new();
+static MAXMINDDB: OnceCell<Reader<Vec<u8>>> = OnceCell::const_new();
 pub static CLIENT_IP_HEADER: OnceLock<String> = OnceLock::new();
 
 #[derive(Debug, Clone)]
@@ -44,17 +44,12 @@ impl MaxMindDB {
 
     #[tracing::instrument(skip(ip))]
     pub async fn get_city<'a>(ip: IpAddr) -> MaxmindDbResult<City<'a>> {
-        if let Ok(reader) = init_maxminddb().await {
-            if let Ok(result) = reader.lookup(ip)
-                && let Ok(Some(city)) = result.decode::<City<'a>>()
-            {
-                Ok(city)
-            } else {
-                Err(MaxmindDbError::Custom("Failed to get reader".to_string()))
-            }
-        } else {
-            Err(MaxmindDbError::Custom("Failed to get reader".to_string()))
-        }
+        let reader = init_maxminddb().await?;
+        let result = reader.lookup(ip)?;
+        let city = result.decode::<City<'a>>()?;
+        city.ok_or(MaxmindDbError::Custom(
+            "Decoded city but not found".to_string(),
+        ))
     }
 
     #[cfg(feature = "maxminddb-axum")]
@@ -87,7 +82,10 @@ impl MaxMindDB {
             );
             Some(timezone)
         } else if let Some(ip) = self.get_ip(headers)
-            && let Some(city) = Self::get_city(ip).await.ok()
+            && let Some(city) = Self::get_city(ip)
+                .await
+                .inspect_err(|err| tracing::error!("{err:?}"))
+                .ok()
             && let Some(timezone) = city.location.time_zone
         {
             tracing::debug!("Found through ip header -> {ip}: {timezone}");
@@ -136,20 +134,20 @@ fn get_local_ip() -> Option<&'static String> {
     LOCAL_IP
         .get_or_init(|| {
             ip_discovery::blocking::get_ipv4()
-                .map_err(|err| {
-                    println!("Failed to get public ipv4: {err:?}");
-                    err
+                .inspect_err(|err| {
+                    tracing::error!("Failed to get public ipv4: {err:?}");
                 })
                 .ok()
-                .and_then(|ips| ips.ipv4().map(|ip| ip.to_string()))
+                .and_then(|ips| ips.ipv4())
+                .map(|ip| ip.to_string())
         })
         .as_ref()
 }
 
 #[tracing::instrument]
-async fn init_maxminddb() -> &'static MaxmindDbResult<Reader<Vec<u8>>> {
+async fn init_maxminddb() -> MaxmindDbResult<&'static Reader<Vec<u8>>> {
     MAXMINDDB
-        .get_or_init(|| async {
+        .get_or_try_init(|| async {
             let target_file_name = "GeoLite2-City.mmdb";
 
             if !std::path::Path::new(target_file_name).exists() {
