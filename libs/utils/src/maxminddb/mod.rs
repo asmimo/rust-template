@@ -2,7 +2,7 @@ use std::{net::IpAddr, sync::OnceLock};
 
 use flate2::read::GzDecoder;
 use jiff::tz::TimeZone;
-use maxminddb::{Reader, geoip2::City};
+use maxminddb::{Reader, path};
 use tar::Archive;
 use tokio::sync::OnceCell;
 
@@ -43,10 +43,10 @@ impl MaxMindDB {
     }
 
     #[tracing::instrument(skip(ip))]
-    pub async fn get_city<'a>(ip: IpAddr) -> MaxmindDbResult<City<'a>> {
+    pub async fn get_city<'a>(ip: IpAddr) -> MaxmindDbResult<String> {
         let reader = init_maxminddb().await?;
         let result = reader.lookup(ip)?;
-        let city = result.decode::<City<'a>>()?;
+        let city: Option<String> = result.decode_path(&path!["location", "time_zone"])?;
         city.ok_or(MaxmindDbError::Custom(
             "Decoded city but not found".to_string(),
         ))
@@ -82,14 +82,13 @@ impl MaxMindDB {
             );
             Some(timezone)
         } else if let Some(ip) = self.get_ip(headers)
-            && let Some(city) = Self::get_city(ip)
+            && let Some(timezone) = Self::get_city(ip)
                 .await
                 .inspect_err(|err| tracing::error!("{err:?}"))
                 .ok()
-            && let Some(timezone) = city.location.time_zone
         {
             tracing::debug!("Found through ip header -> {ip}: {timezone}");
-            Some(timezone.to_string())
+            Some(timezone)
         } else {
             tracing::debug!(
                 "Timezone not found: Using default timezone: {:?}",
