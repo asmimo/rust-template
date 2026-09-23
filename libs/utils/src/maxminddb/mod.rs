@@ -115,14 +115,11 @@ impl MaxMindDB {
         let header_names = header_string.split(',').collect_vec();
 
         header_names.iter().find_map(|header_name| {
-            headers.get(*header_name).and_then(|value| {
-                value.to_str().ok().and_then(|value| {
-                    value
-                        .split(',')
-                        .next()
-                        .map(|value| value.trim().to_string())
-                })
-            })
+            headers
+                .get(*header_name)
+                .and_then(|value| value.to_str().ok())
+                .and_then(|value| value.split(',').next())
+                .map(|value| value.trim().to_string())
         })
     }
 }
@@ -160,13 +157,7 @@ async fn init_maxminddb() -> MaxmindDbResult<&'static Reader<Vec<u8>>> {
                 for entry_result in archive.entries()? {
                     let mut entry = entry_result?;
 
-                    let path = entry
-                        .path()?
-                        .to_str()
-                        .ok_or(MaxmindDbError::Custom(
-                            "Failed to convert path to string".to_string(),
-                        ))?
-                        .to_string();
+                    let path = entry.path()?.to_string_lossy().into_owned();
 
                     if std::path::Path::new(&path)
                         .extension()
