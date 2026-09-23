@@ -43,7 +43,7 @@ impl MaxMindDB {
     }
 
     #[tracing::instrument(skip(ip))]
-    pub async fn get_city<'a>(ip: IpAddr) -> MaxmindDbResult<String> {
+    pub async fn get_city(ip: IpAddr) -> MaxmindDbResult<String> {
         let reader = init_maxminddb().await?;
         let result = reader.lookup(ip)?;
         let city: Option<String> = result.decode_path(&path!["location", "time_zone"])?;
