@@ -39,6 +39,3 @@ url = "2.5.8"
 identifiers = { path = "libs/identifiers" }
 telemetry = { path = "libs/telemetry" }
 utils = { path = "libs/utils" }
-
-[patch.crates-io]
-tracing-opentelemetry = { git = "https://github.com/tokio-rs/tracing-opentelemetry", branch = "v0.1.x" }
