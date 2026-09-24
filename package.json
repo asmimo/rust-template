@@ -18,35 +18,28 @@
 		"lint:js.fix": "bunx oxlint --fix",
 		"lint:all.fix": "bun lint:js.fix && bun lint:rust.fix"
 	},
-	"dependencies": {
-		"type-fest": "^5.9.0"
-	},
 	"devDependencies": {
-		"@imacrayon/alpine-ajax": "0.12.7",
-		"@inquirer/checkbox": "5.2.3",
-		"@inquirer/input": "5.1.4",
-		"@inquirer/select": "5.2.3",
-		"@tailwindcss/typography": "0.5.20",
-		"@tailwindcss/vite": "4.3.3",
-		"@types/alpinejs": "3.13.11",
-		"@types/bun": "1.4.0",
-		"alpinejs": "3.16.3",
-		"commander": "15.0.0",
-		"daisyui": "5.7.22",
-		"oxfmt": "^0.66.0",
-		"oxlint": "^1.81.0",
-		"smol-toml": "1.8.0",
-		"tailwindcss": "4.3.3",
-		"tailwindcss-animated": "2.1.0",
-		"valibot": "^1.4.2",
-		"vite": "8.2.2"
+		"@imacrayon/alpine-ajax": "^0.12.7",
+		"@inquirer/checkbox": "^5.2.5",
+		"@inquirer/input": "^5.1.6",
+		"@inquirer/select": "^5.2.5",
+		"@tailwindcss/typography": "^0.5.20",
+		"@tailwindcss/vite": "^4.3.3",
+		"@types/alpinejs": "^3.13.11",
+		"@types/bun": "^1.4.2",
+		"alpinejs": "^3.17.4",
+		"commander": "^15.0.0",
+		"daisyui": "^5.7.44",
+		"oxfmt": "^0.70.0",
+		"oxlint": "^1.85.0",
+		"smol-toml": "^1.9.0",
+		"tailwindcss": "^4.3.3",
+		"tailwindcss-animated": "^2.1.0",
+		"type-fest": "^5.10.0",
+		"valibot": "^1.5.0",
+		"vite": "^8.3.1"
 	},
 	"peerDependencies": {
 		"typescript": "7.0.2"
-	},
-	"optionalDependencies": {
-		"@rollup/rollup-linux-x64-gnu": "4.63.1",
-		"@tailwindcss/oxide-linux-x64-gnu": "4.3.3",
-		"lightningcss-linux-x64-gnu": "1.33.0"
 	}
 }
