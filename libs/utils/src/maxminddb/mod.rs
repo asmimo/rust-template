@@ -16,7 +16,7 @@ pub mod error;
 #[cfg(debug_assertions)]
 static LOCAL_IP: OnceLock<Option<String>> = OnceLock::new();
 
-static MAXMINDDB: OnceCell<Reader<Vec<u8>>> = OnceCell::const_new();
+static MAXMINDDB: OnceCell<MaxmindDbResult<Reader<Vec<u8>>>> = OnceCell::const_new();
 pub static CLIENT_IP_HEADER: OnceLock<String> = OnceLock::new();
 
 #[derive(Debug, Clone)]
@@ -43,8 +43,11 @@ impl MaxMindDB {
     }
 
     #[tracing::instrument(skip(ip))]
-    pub async fn get_city(ip: IpAddr) -> MaxmindDbResult<String> {
-        let reader = init_maxminddb().await?;
+    pub async fn get_time_zone(ip: IpAddr) -> MaxmindDbResult<String> {
+        let reader = init_maxminddb()
+            .await
+            .as_ref()
+            .map_err(|err| MaxmindDbError::Custom(err.to_string()))?;
         let result = reader.lookup(ip)?;
         let city: Option<String> = result.decode_path(&path!["location", "time_zone"])?;
         city.ok_or(MaxmindDbError::Custom(
@@ -82,7 +85,7 @@ impl MaxMindDB {
             );
             Some(timezone)
         } else if let Some(ip) = self.get_ip(headers)
-            && let Some(timezone) = Self::get_city(ip)
+            && let Some(timezone) = Self::get_time_zone(ip)
                 .await
                 .inspect_err(|err| tracing::error!("{err:?}"))
                 .ok()
@@ -141,9 +144,9 @@ fn get_local_ip() -> Option<&'static String> {
 }
 
 #[tracing::instrument]
-async fn init_maxminddb() -> MaxmindDbResult<&'static Reader<Vec<u8>>> {
+async fn init_maxminddb() -> &'static MaxmindDbResult<Reader<Vec<u8>>> {
     MAXMINDDB
-        .get_or_try_init(|| async {
+        .get_or_init(|| async {
             let target_file_name = "GeoLite2-City.mmdb";
 
             if !std::path::Path::new(target_file_name).exists() {
