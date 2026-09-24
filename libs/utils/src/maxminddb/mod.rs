@@ -2,7 +2,7 @@ use std::{net::IpAddr, sync::OnceLock};
 
 use flate2::read::GzDecoder;
 use jiff::tz::TimeZone;
-use maxminddb::{Reader, geoip2::City};
+use maxminddb::{Reader, path};
 use tar::Archive;
 use tokio::sync::OnceCell;
 
@@ -43,18 +43,16 @@ impl MaxMindDB {
     }
 
     #[tracing::instrument(skip(ip))]
-    pub async fn get_city<'a>(ip: IpAddr) -> MaxmindDbResult<City<'a>> {
-        if let Ok(reader) = init_maxminddb().await {
-            if let Ok(result) = reader.lookup(ip)
-                && let Ok(Some(city)) = result.decode::<City<'a>>()
-            {
-                Ok(city)
-            } else {
-                Err(MaxmindDbError::Custom("Failed to get reader".to_string()))
-            }
-        } else {
-            Err(MaxmindDbError::Custom("Failed to get reader".to_string()))
-        }
+    pub async fn get_time_zone(ip: IpAddr) -> MaxmindDbResult<String> {
+        let reader = init_maxminddb()
+            .await
+            .as_ref()
+            .map_err(|err| MaxmindDbError::Custom(err.to_string()))?;
+        let result = reader.lookup(ip)?;
+        let city: Option<String> = result.decode_path(&path!["location", "time_zone"])?;
+        city.ok_or(MaxmindDbError::Custom(
+            "Decoded city but not found".to_string(),
+        ))
     }
 
     #[cfg(feature = "maxminddb-axum")]
@@ -87,11 +85,13 @@ impl MaxMindDB {
             );
             Some(timezone)
         } else if let Some(ip) = self.get_ip(headers)
-            && let Some(city) = Self::get_city(ip).await.ok()
-            && let Some(timezone) = city.location.time_zone
+            && let Some(timezone) = Self::get_time_zone(ip)
+                .await
+                .inspect_err(|err| tracing::error!("{err:?}"))
+                .ok()
         {
             tracing::debug!("Found through ip header -> {ip}: {timezone}");
-            Some(timezone.to_string())
+            Some(timezone)
         } else {
             tracing::debug!(
                 "Timezone not found: Using default timezone: {:?}",
@@ -118,14 +118,11 @@ impl MaxMindDB {
         let header_names = header_string.split(',').collect_vec();
 
         header_names.iter().find_map(|header_name| {
-            headers.get(*header_name).and_then(|value| {
-                value.to_str().ok().and_then(|value| {
-                    value
-                        .split(',')
-                        .next()
-                        .map(|value| value.trim().to_string())
-                })
-            })
+            headers
+                .get(*header_name)
+                .and_then(|value| value.to_str().ok())
+                .and_then(|value| value.split(',').next())
+                .map(|value| value.trim().to_string())
         })
     }
 }
@@ -136,12 +133,12 @@ fn get_local_ip() -> Option<&'static String> {
     LOCAL_IP
         .get_or_init(|| {
             ip_discovery::blocking::get_ipv4()
-                .map_err(|err| {
-                    println!("Failed to get public ipv4: {err:?}");
-                    err
+                .inspect_err(|err| {
+                    tracing::error!("Failed to get public ipv4: {err:?}");
                 })
                 .ok()
-                .and_then(|ips| ips.ipv4().map(|ip| ip.to_string()))
+                .and_then(|ips| ips.ipv4())
+                .map(|ip| ip.to_string())
         })
         .as_ref()
 }
@@ -163,13 +160,7 @@ async fn init_maxminddb() -> &'static MaxmindDbResult<Reader<Vec<u8>>> {
                 for entry_result in archive.entries()? {
                     let mut entry = entry_result?;
 
-                    let path = entry
-                        .path()?
-                        .to_str()
-                        .ok_or(MaxmindDbError::Custom(
-                            "Failed to convert path to string".to_string(),
-                        ))?
-                        .to_string();
+                    let path = entry.path()?.to_string_lossy().into_owned();
 
                     if std::path::Path::new(&path)
                         .extension()
