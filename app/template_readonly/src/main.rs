@@ -33,7 +33,7 @@ impl AppStateInner {
         );
 
         let lettre = lettre
-            .map_err(|err| {
+            .inspect_err(|err| {
                 tracing::warn!("Skipping lettre(Failed): {}", err);
             })
             .ok();

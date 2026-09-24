@@ -23,14 +23,14 @@ pub enum OtlpProtocol {
 }
 
 impl FromStr for OtlpProtocol {
-    type Err = ();
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "grpc" => Ok(OtlpProtocol::Grpc),
             "http/protobuf" => Ok(OtlpProtocol::HttpProtobuf),
             "http/json" => Ok(OtlpProtocol::HttpJson),
-            _ => Err(()),
+            _ => Err("'grpc', 'http/protobuf' and 'http/json'".to_string()),
         }
     }
 }
@@ -40,11 +40,11 @@ impl Default for TelemetryConfig {
         let otlp_protocol_key = "OTEL_EXPORTER_OTLP_PROTOCOL";
         let otlp_protocol = env::get_env(otlp_protocol_key)
             .and_then(|protocol| {
-                protocol.parse::<OtlpProtocol>().map_err(|()| {
+                protocol.parse::<OtlpProtocol>().map_err(|error| {
                     let error = env::EnvError::ParseFailed {
                         key: otlp_protocol_key.to_string(),
                         value: protocol,
-                        error: "'grpc', 'http/protobuf' and 'http/json'".to_string(),
+                        error,
                     };
 
                     println!("{error}");
