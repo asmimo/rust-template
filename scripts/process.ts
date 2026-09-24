@@ -11,14 +11,22 @@ export const spawnSafe = (
 	options: { cwd?: string } = {},
 ): Promise<void> =>
 	new Promise<void>((resolve, reject) => {
+		let interrupted = false;
+
 		const child = cp.spawn(program, args, {
 			shell: false,
 			stdio: "inherit",
 			...options,
 		});
 
+		const onSigint = (): void => {
+			interrupted = true;
+		};
+		process.once("SIGINT", onSigint);
+
 		child.on("close", (code) => {
-			if (code === resolvedCode) {
+			process.off("SIGINT", onSigint);
+			if (code === resolvedCode || interrupted) {
 				resolve();
 			} else {
 				reject(new Error(`Command failed with exit code ${code}`));
@@ -26,6 +34,7 @@ export const spawnSafe = (
 		});
 
 		child.on("error", (error) => {
+			process.off("SIGINT", onSigint);
 			reject(error);
 		});
 	});
