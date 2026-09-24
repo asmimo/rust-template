@@ -6,7 +6,7 @@ FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM chef AS builder
+FROM chef AS builder-rs
 ARG APP
 ARG FEATURES
 COPY --from=planner /app/recipe.json recipe.json
@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     fi \
     && cp /app/target/release/$APP /app/entrypoint
 
-FROM oven/bun:slim AS rest
+FROM oven/bun:slim AS builder-js
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install
@@ -62,10 +62,8 @@ RUN apt-get update -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/entrypoint entrypoint
-
-COPY --from=rest /app/dist dist
-COPY --from=rest /app/logo logo
+COPY --from=builder-rs /app/entrypoint entrypoint
+COPY --from=builder-js /app/dist dist
 
 ENV APP_ENVIRONMENT=production
 
