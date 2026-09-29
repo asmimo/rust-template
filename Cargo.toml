@@ -1,14 +1,15 @@
 [workspace]
 members = [
-	# apps
 	"app/template_readonly",
-	# "app/image",
-	# libs
 	"libs/identifiers",
 	"libs/telemetry",
 	"libs/utils",
+	# for formatting
 ]
 resolver = "2"
+
+[workspace.metadata]
+name = "rust-template"
 
 [workspace.package]
 edition = "2024"
@@ -39,3 +40,7 @@ url = "2.5.8"
 identifiers = { path = "libs/identifiers" }
 telemetry = { path = "libs/telemetry" }
 utils = { path = "libs/utils" }
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+missing_errors_doc = "allow"

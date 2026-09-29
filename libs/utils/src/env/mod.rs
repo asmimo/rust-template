@@ -25,6 +25,7 @@ pub fn get_env(key: &str) -> Result<String, EnvError> {
         })
 }
 
+#[must_use]
 pub fn get_env_or_default(key: &str, default: String) -> String {
     get_env(key).unwrap_or(default)
 }

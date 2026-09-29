@@ -19,6 +19,7 @@ static LOCAL_IP: OnceLock<Option<String>> = OnceLock::new();
 static MAXMINDDB: OnceCell<MaxmindDbResult<Reader<Vec<u8>>>> = OnceCell::const_new();
 pub static CLIENT_IP_HEADER: OnceLock<String> = OnceLock::new();
 
+#[must_use]
 #[derive(Debug, Clone)]
 pub struct MaxMindDB {
     #[cfg_attr(debug_assertions, allow(unused))]
@@ -109,6 +110,7 @@ impl MaxMindDB {
     }
 
     #[cfg(feature = "maxminddb-axum")]
+    #[must_use]
     pub fn get_header_value(
         headers: &axum::http::HeaderMap,
         header_string: &str,

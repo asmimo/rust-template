@@ -25,3 +25,6 @@ opentelemetry-otlp = { version = "0.33.0", features = [
 	"tls-aws-lc",
 	"tls-webpki-roots",
 ] }
+
+[lints]
+workspace = true

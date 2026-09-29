@@ -6,6 +6,7 @@ use opentelemetry_sdk::Resource;
 
 use utils::env;
 
+#[must_use]
 #[derive(Debug, Clone)]
 pub struct TelemetryConfig {
     pub service_name: String,
@@ -72,27 +73,25 @@ impl TelemetryConfig {
         }
     }
 
-    #[must_use]
     pub fn with_service_version(mut self, value: impl Into<String>) -> Self {
         self.service_version = value.into();
 
         self
     }
 
-    #[must_use]
     pub fn with_metrics(mut self, value: bool) -> Self {
         self.enable_metrics = value;
 
         self
     }
 
-    #[must_use]
     pub fn with_tracing(mut self, value: bool) -> Self {
         self.enable_tracing = value;
 
         self
     }
 
+    #[must_use]
     pub fn get_resource(&self) -> Resource {
         Resource::builder()
             .with_attribute(KeyValue::new(
@@ -102,6 +101,7 @@ impl TelemetryConfig {
             .build()
     }
 
+    #[must_use]
     pub fn get_tls_config() -> ClientTlsConfig {
         ClientTlsConfig::new().with_enabled_roots()
     }

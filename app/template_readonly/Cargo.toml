@@ -23,3 +23,6 @@ tracing = { workspace = true }
 identifiers = { workspace = true }
 telemetry = { workspace = true }
 utils = { workspace = true, features = ["lettre", "maxminddb-axum"] }
+
+[lints]
+workspace = true
