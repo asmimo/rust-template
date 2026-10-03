@@ -8,23 +8,28 @@ const appRootDir = "../app";
 export const getApp = async (name?: string): Promise<string> => {
 	const apps = await getDirectoryFolders(appRootDir);
 
-	if (name && apps.includes(name)) {
+	if (name !== undefined && apps.includes(name)) {
 		return name;
 	}
 
-	if (name) {
+	if (name !== undefined) {
 		console.log(`App '${name}' is not valid.`);
 	}
 
 	const choices = apps.map((app) => ({ name: app, value: app }));
 
-	return await select({
+	const app = await select({
 		choices,
 		message: "Choose an app",
 	});
+
+	return app;
 };
 
-const validateFeatures = (features: string[], validFeatures: string[]): string[] => {
+const validateFeatures = (
+	features: Readonly<string[]>,
+	validFeatures: Readonly<string[]>,
+): string[] => {
 	const invalid = features.filter((feature) => !validFeatures.includes(feature));
 	if (invalid.length > 0) {
 		console.warn(`Unknown features ignored: ${invalid.join(", ")}`);
@@ -33,15 +38,16 @@ const validateFeatures = (features: string[], validFeatures: string[]): string[]
 };
 
 export const getAppFeatures = async (
+	// oxlint-disable-next-line @typescript/prefer-readonly-parameter-types
 	features?: TomlValue,
-	configFeatures?: string | string[],
+	configFeatures?: string | readonly string[],
 ): Promise<string[]> => {
-	if (features && typeof features === "object" && features !== null) {
+	if (features !== undefined && typeof features === "object" && features !== null) {
 		const tomlFeatures = Object.keys(features).filter((feature) => feature !== "default");
 
 		let validFeaturesList: string[] = [];
-		if (configFeatures) {
-			const requested: string[] =
+		if (configFeatures !== undefined) {
+			const requested =
 				typeof configFeatures === "string"
 					? configFeatures.split(",").map((feature) => feature.trim())
 					: configFeatures;
@@ -51,7 +57,7 @@ export const getAppFeatures = async (
 		if (validFeaturesList.length > 0) {
 			return validFeaturesList;
 		} else if (tomlFeatures.length > 0) {
-			return await checkbox({
+			const selectedFeatures = await checkbox({
 				choices: tomlFeatures.map((feature) => ({
 					checked: validFeaturesList.includes(feature),
 					name: feature,
@@ -59,30 +65,10 @@ export const getAppFeatures = async (
 				})),
 				message: "Choose features",
 			});
+
+			return selectedFeatures;
 		}
 	}
 
 	return [];
-};
-
-const tailwindConfigRootDir = "../styles";
-export const getTailwindConfig = async (name?: string): Promise<string> => {
-	const tailwindConfigs = [
-		"SKIP",
-		...(await getDirectoryFolders(tailwindConfigRootDir).then((files) =>
-			files.filter((file) => !file.startsWith("base")),
-		)),
-	] as const;
-
-	const matchedConfig =
-		name && tailwindConfigs.find((config) => typeof config === "string" && config.includes(name));
-	if (matchedConfig) {
-		return matchedConfig;
-	}
-
-	return await select({
-		choices: tailwindConfigs,
-		default: "SKIP",
-		message: "Choose a tailwind config",
-	});
 };

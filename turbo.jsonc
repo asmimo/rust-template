@@ -1,0 +1,29 @@
+{
+	"$schema": "./node_modules/turbo/schema.json",
+	"futureFlags": {
+		"experimentalCargoWorkspaces": true,
+		"experimentalTaskCommand": true,
+		"globalConfiguration": true,
+		"watchUsingTaskInputs": true,
+	},
+	"global": {
+		"noUpdateNotifier": true,
+		"ui": "tui",
+	},
+	"tasks": {
+		"dev": {
+			"persistent": true,
+			"interruptible": true,
+			"cache": false,
+		},
+		"//#lint:js": {
+			"command": ["vp", "lint"],
+		},
+		"//#format:js": {
+			"command": ["vp", "fmt"],
+		},
+		"//#check:js": {
+			"command": ["vp", "check"],
+		},
+	},
+}

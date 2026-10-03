@@ -1,0 +1,19 @@
+{
+	"$schema": "../../node_modules/turbo/schema.json",
+	"extends": ["//"],
+	"tasks": {
+		"dev": {
+			"persistent": false,
+			"interruptible": false,
+			"interactive": true,
+			"passThroughEnv": ["APP"],
+			"inputs": ["../*/src/**/*"],
+			"outputs": ["../../dist"],
+		},
+		"build": {
+			"interactive": true,
+			"passThroughEnv": ["APP"],
+			"outputs": ["../../dist"],
+		},
+	},
+}
