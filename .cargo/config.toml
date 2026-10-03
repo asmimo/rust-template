@@ -20,6 +20,3 @@ codegen-backend = true
 codegen-backend = "cranelift"
 split-debuginfo = "unpacked"
 debug = "line-tables-only"
-
-[build]
-rustflags = ["-Z", "threads=8"]
