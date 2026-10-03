@@ -7,7 +7,7 @@
 			"interruptible": false,
 			"env": ["APP"],
 			"outputs": ["../../dist"],
-			"inputs": ["../*/src/**/*"],
+			"inputs": ["../*/src/**/*", "vite.config.ts"],
 		},
 		"build": {
 			"env": ["APP"],
