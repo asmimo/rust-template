@@ -9,7 +9,7 @@ pub async fn index(
     Timezone((timezone, _)): Timezone,
 ) -> Result<impl IntoResponse, app_error::AppError> {
     let t = rsx! {
-        <div>"Hello, world!"</div>
+        <div class="text-teal-500">"Hello, world!"</div>
         @if let Some(timezone) = timezone.iana_name() {
             <div>"Timezone: " (timezone)</div>
         }

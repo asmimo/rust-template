@@ -37,9 +37,9 @@ COPY package.json bun.lock ./
 RUN bun install
 
 COPY . .
-ARG TAILWIND_CONFIG
-ENV TAILWIND_CONFIG=$TAILWIND_CONFIG
-RUN bun run build:script
+ARG APP
+
+RUN bunx vp run --filter=public-assets build -- --app $APP
 
 # FROM chef AS wget-bundle
 # RUN mkdir -p /bundle/usr/bin \

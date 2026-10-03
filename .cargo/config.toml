@@ -1,3 +1,6 @@
+[env]
+AWS_LC_SYS_NO_U1_BINDINGS = "1"
+
 [target.x86_64-unknown-linux-gnu]
 rustflags = ["-C", "linker=clang", "-C", "link-arg=-fuse-ld=lld"]
 
@@ -9,3 +12,14 @@ rustflags = ["-C", "link-arg=-fuse-ld=lld"]
 
 [target.x86_64-apple-darwin]
 rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+[unstable]
+codegen-backend = true
+
+[profile.dev]
+codegen-backend = "cranelift"
+split-debuginfo = "unpacked"
+debug = "line-tables-only"
+
+[build]
+rustflags = ["-Z", "threads=8"]

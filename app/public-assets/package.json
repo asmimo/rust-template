@@ -1,0 +1,22 @@
+{
+	"name": "public-assets",
+	"version": "0.1.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vp build --mode development",
+		"build": "vp build --mode production"
+	},
+	"devDependencies": {
+		"@imacrayon/alpine-ajax": "^0.12.7",
+		"@tailwindcss/typography": "^0.5.20",
+		"@tailwindcss/vite": "^4.3.3",
+		"@types/alpinejs": "^3.17.0",
+		"alpinejs": "^3.17.4",
+		"daisyui": "^5.7.47",
+		"tailwindcss": "^4.3.3",
+		"typescript": "*",
+		"vite": "npm:@voidzero-dev/vite-plus-core@1.0.0",
+		"vite-plus": "*"
+	}
+}

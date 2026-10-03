@@ -4,6 +4,7 @@ import Alpine from "alpinejs";
 
 globalThis.Alpine = Alpine;
 
+// oxlint-disable-next-line @typescript/no-unsafe-argument
 Alpine.plugin(ajax);
 
 Alpine.start();

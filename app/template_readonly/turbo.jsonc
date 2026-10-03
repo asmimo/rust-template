@@ -1,0 +1,10 @@
+{
+	"$schema": "../../node_modules/turbo/schema.json",
+	"extends": ["//"],
+	"tasks": {
+		"dev": {
+			"dependsOn": ["public-assets#dev"],
+			"inputs": ["../public-assets/src"],
+		},
+	},
+}

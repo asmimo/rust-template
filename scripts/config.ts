@@ -20,10 +20,12 @@ const getEnv = async (defaultEnv?: Env): Promise<Env> => {
 
 	const choices = envs.map((env) => ({ name: env, value: env }));
 
-	return await select({
+	const env = await select({
 		choices,
 		message: "Choose an environment",
 	});
+
+	return env;
 };
 
 const DockerConfigSchema = v.object({
@@ -38,7 +40,6 @@ const AppConfigSchema = v.object({
 	app: v.optional(v.string()),
 	env: v.optional(v.picklist(envs), "development"),
 	features: v.optional(FeatureSchema),
-	tailwindConfig: v.optional(v.string()),
 	...DockerConfigSchema.entries,
 });
 export type AppConfig = v.InferOutput<typeof AppConfigSchema>;
@@ -63,7 +64,6 @@ export const getConfig = async (): Promise<AppConfig> => {
 		.option("-a, --app <app>", "The name of the app")
 		.addOption(new Option("-e, --env <env>", "The name of the environment").choices(envs))
 		.option("-f, --features <features>", "The name of the features")
-		.option("--tailwind-config <tailwindConfig>", "The name of the tailwind config")
 		.addOption(namedOption("--docker-org <dockerOrg>", "The name of the docker org", "org"))
 		.addOption(namedOption("--docker-tag <dockerTag>", "The name of the docker tag", "tag"))
 		.addOption(namedOption("--docker-image <dockerImage>", "The name of the docker image", "image"))
@@ -72,10 +72,16 @@ export const getConfig = async (): Promise<AppConfig> => {
 	const options = program.opts<AppConfig>();
 	const env = await getEnv(options.env);
 
-	const configFromToml = (await getConfigFromToml(env)) || {};
+	const configFromToml = (await getConfigFromToml(env)) ?? {};
 	return { ...configFromToml, ...options };
 };
 
-console.inspect = (...data: unknown[]): void => {
+console.inspect = (...data: Readonly<unknown[]>): void => {
 	console.log(inspect(data, { breakLength: Infinity, compact: true }));
 };
+
+declare global {
+	interface Console {
+		inspect: (...data: Readonly<unknown[]>) => void;
+	}
+}

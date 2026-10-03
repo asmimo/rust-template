@@ -1,14 +1,15 @@
 import cp from "node:child_process";
-import { promisify } from "node:util";
 
-export const exec = promisify(cp.exec);
+import type { ReadonlyDeep } from "type-fest";
 
 const resolvedCode = 0;
 const exitCode = 1;
+
+// oxlint-disable-next-line typescript/promise-function-async
 export const spawnSafe = (
 	program: string,
-	args: string[],
-	options: { cwd?: string } = {},
+	args: readonly string[],
+	options: ReadonlyDeep<{ cwd?: string; env?: NodeJS.ProcessEnv }> = {},
 ): Promise<void> =>
 	new Promise<void>((resolve, reject) => {
 		let interrupted = false;
@@ -33,7 +34,7 @@ export const spawnSafe = (
 			}
 		});
 
-		child.on("error", (error) => {
+		child.on("error", (error: Readonly<Error>) => {
 			process.off("SIGINT", onSigint);
 			reject(error);
 		});
@@ -45,7 +46,7 @@ export const catchError = (error: unknown): void => {
 			console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
 		} else {
 			console.error("An error occurred:", error.message);
-			if (error.stack) {
+			if (error.stack !== undefined) {
 				console.error(error.stack);
 			}
 			process.exit(exitCode);

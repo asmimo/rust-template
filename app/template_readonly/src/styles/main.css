@@ -1,10 +1,14 @@
 @import "tailwindcss" source(none);
-@source "../public";
+@source "../../";
 
 @plugin "@tailwindcss/typography";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 @plugin "daisyui" {
-	themes: false;
+	themes:
+		light --default,
+		dark --prefersdark;
 }
 
 @theme {

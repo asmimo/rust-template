@@ -184,7 +184,5 @@ GeoLite2-City.mmdb
 
 # Other
 .ignore_
-/public/output.css
-/public/main.js
-*.ignore.*
 config.toml
+.turbo
