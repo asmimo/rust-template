@@ -3,38 +3,36 @@ use std::sync::LazyLock;
 use hypertext::prelude::*;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
-pub struct ViteAssetValue {
-    pub file: String,
+#[derive(Deserialize)]
+struct ViteAssetValue {
+    file: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct RawAssetsConfig {
     #[serde(rename = "src/main.ts")]
-    pub main_js: ViteAssetValue,
+    main_js: ViteAssetValue,
 
     #[serde(rename = "style.css")]
-    pub main_css: ViteAssetValue,
+    main_css: ViteAssetValue,
 }
 
-#[derive(Debug)]
 struct AssetsConfig {
-    pub js_entrypoint: String,
-    pub css_entrypoint: String,
+    js_entrypoint: String,
+    css_entrypoint: String,
 }
 
 static ASSET_CONFIG: LazyLock<Option<AssetsConfig>> = LazyLock::new(|| {
-    const RAW_JSON: &str = include_str!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../../dist/.vite/manifest.json"
-    ));
+    let contents = std::fs::read_to_string("./dist/.vite/manifest.json")
+        .inspect_err(|err| tracing::warn!("Failed to read vite manifest.json: {err}"))
+        .ok()?;
 
-    serde_json::from_str::<RawAssetsConfig>(RAW_JSON)
+    serde_json::from_str::<RawAssetsConfig>(&contents)
         .map(|raw| AssetsConfig {
             js_entrypoint: format!("/assets/{}", raw.main_js.file),
             css_entrypoint: format!("/assets/{}", raw.main_css.file),
         })
-        .inspect_err(|err| tracing::warn!("Failed to deserialize vite mainifest.json: {err}"))
+        .inspect_err(|err| tracing::warn!("Failed to deserialize vite manifest.json: {err}"))
         .ok()
 });
 
