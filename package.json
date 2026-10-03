@@ -7,7 +7,7 @@
 	],
 	"type": "module",
 	"scripts": {
-		"clean:js": "rm -rf node_modules **/*/node_modules dist **/*/dist .turbo bun.lock",
+		"clean:js": "rm -rf node_modules **/*/node_modules dist **/*/dist .turbo",
 		"clean:rust": "rm -rf Cargo.lock && cargo clean",
 		"clean:all": "bun clean:js && bun clean:rust",
 		"dev": "bun ./scripts/dev.ts --env development",
