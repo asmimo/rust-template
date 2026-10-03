@@ -19,8 +19,8 @@ const run = async (config: ReadonlyDeep<AppConfig>): Promise<void> => {
 	console.inspect(config);
 	await spawnSafe("turbo", ["watch", "dev", `--filter=${app}`], {
 		env: {
-			APP: app,
 			...process.env,
+			APP: app,
 		},
 	});
 };
