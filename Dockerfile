@@ -6,6 +6,16 @@ FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
+FROM oven/bun:slim AS builder-js
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install
+
+COPY . .
+ARG APP
+
+RUN bunx vp run --filter=public-assets build -- --app $APP
+
 FROM chef AS builder-rs
 ARG APP
 ARG FEATURES
@@ -20,6 +30,8 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     fi
 
 COPY . .
+COPY --from=builder-js /app/dist /app/dist
+
 ENV SQLX_OFFLINE=true
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
@@ -30,16 +42,6 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
       cargo build --release --bin $APP; \
     fi \
     && cp /app/target/release/$APP /app/entrypoint
-
-FROM oven/bun:slim AS builder-js
-WORKDIR /app
-COPY package.json bun.lock ./
-RUN bun install
-
-COPY . .
-ARG APP
-
-RUN bunx vp run --filter=public-assets build -- --app $APP
 
 # FROM chef AS wget-bundle
 # RUN mkdir -p /bundle/usr/bin \
