@@ -5,14 +5,12 @@
 		"dev": {
 			"persistent": false,
 			"interruptible": false,
-			"interactive": true,
-			"passThroughEnv": ["APP"],
-			"inputs": ["../*/src/**/*"],
+			"env": ["APP"],
 			"outputs": ["../../dist"],
+			"inputs": ["../*/src/**/*"],
 		},
 		"build": {
-			"interactive": true,
-			"passThroughEnv": ["APP"],
+			"env": ["APP"],
 			"outputs": ["../../dist"],
 		},
 	},
